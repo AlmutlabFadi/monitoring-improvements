@@ -4,7 +4,7 @@ World-Class Web Dashboard Server for Advanced Monitoring System
 خادم لوحة التحكم الويب عالمي المستوى لنظام المراقبة المتقدم
 """
 
-from flask import Flask, render_template_string, jsonify, request
+from flask import Flask, render_template_string, jsonify, request, redirect
 import os
 import json
 import requests
@@ -323,6 +323,72 @@ def health():
         'service': 'World-Class Web Dashboard',
         'timestamp': datetime.now().isoformat()
     })
+
+@app.route('/ultimate-dashboard')
+def ultimate_dashboard():
+    """Serve the ultimate comprehensive dashboard"""
+    return redirect('http://localhost:9000/ultimate-dashboard')
+
+@app.route('/simulators')
+def device_simulators():
+    """Serve device simulators page"""
+    return redirect('http://localhost:9000/simulators')
+
+@app.route('/installation-demos')
+def installation_demos():
+    """Serve installation demos page"""
+    return redirect('http://localhost:9000/installation-demos')
+
+@app.route('/api/simulated-devices')
+def get_simulated_devices():
+    """Get simulated devices data"""
+    devices = [
+        {
+            'id': 'SIM_001',
+            'name': 'Samsung Galaxy S23',
+            'type': 'Android',
+            'status': 'online',
+            'battery': 85,
+            'location': {'lat': 24.7136, 'lng': 46.6753},
+            'monitoring_data': {'messages': 245, 'calls': 12, 'screenshots': 67, 'apps_monitored': 8}
+        },
+        {
+            'id': 'SIM_002', 
+            'name': 'iPhone 15 Pro',
+            'type': 'iOS',
+            'status': 'monitoring',
+            'battery': 92,
+            'location': {'lat': 24.7140, 'lng': 46.6750},
+            'monitoring_data': {'messages': 189, 'calls': 8, 'screenshots': 43, 'apps_monitored': 6}
+        },
+        {
+            'id': 'SIM_003',
+            'name': 'Huawei P50',
+            'type': 'Android',
+            'status': 'online',
+            'battery': 78,
+            'location': {'lat': 24.7130, 'lng': 46.6760},
+            'monitoring_data': {'messages': 156, 'calls': 5, 'screenshots': 29, 'apps_monitored': 7}
+        }
+    ]
+    
+    return jsonify({'success': True, 'devices': devices})
+
+@app.route('/api/simulate/app-activity', methods=['POST'])
+def simulate_app_activity():
+    """Handle simulated app activity"""
+    data = request.get_json()
+    
+    activity_log = {
+        'timestamp': datetime.now().isoformat(),
+        'app': data.get('app'),
+        'device': data.get('device'),
+        'activity_type': 'app_launch'
+    }
+    
+    print(f"Simulated Activity: {activity_log}")
+    
+    return jsonify({'success': True, 'logged': activity_log})
 
 if __name__ == '__main__':
     print("🌍 Starting World-Class Web Dashboard...")
