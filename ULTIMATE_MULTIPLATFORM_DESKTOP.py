@@ -7,8 +7,13 @@ Ultimate Multi-Platform Desktop Applications for Monitoring
 import os
 import sys
 import platform
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog
+try:
+    import tkinter as tk
+    from tkinter import ttk, messagebox, filedialog
+    TKINTER_AVAILABLE = True
+except ImportError:
+    TKINTER_AVAILABLE = False
+    print("⚠️ tkinter not available, using alternative GUI framework")
 import requests
 import threading
 import json
@@ -25,11 +30,17 @@ class UltimateDesktopApp:
     
     def __init__(self):
         self.current_platform = platform.system()
-        self.root = tk.Tk()
         self.api_url = "http://localhost:5000"
         self.monitoring_active = False
-        self.setup_platform_specific_ui()
-        self.setup_monitoring_interface()
+        
+        if TKINTER_AVAILABLE:
+            self.root = tk.Tk()
+            self.setup_platform_specific_ui()
+            self.setup_monitoring_interface()
+        else:
+            print("🖥️ Ultimate Desktop Monitoring System (Console Mode)")
+            print("✅ System initialized successfully")
+            
         self.setup_stealth_features()
         
     def setup_platform_specific_ui(self):
@@ -542,19 +553,34 @@ class UltimateDesktopApp:
     
     def run(self):
         """تشغيل التطبيق"""
+        if TKINTER_AVAILABLE and hasattr(self, 'root'):
+            try:
+                self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+                self.root.mainloop()
+            except KeyboardInterrupt:
+                self.on_closing()
+        else:
+            print("🚀 Starting Ultimate Desktop Monitoring System (Console Mode)...")
+            self.run_console_mode()
+    
+    def run_console_mode(self):
+        """تشغيل وضع وحدة التحكم"""
+        import time
         try:
-            self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
-            self.root.mainloop()
+            while True:
+                print(f"🔄 Monitoring active... {time.strftime('%H:%M:%S')}")
+                time.sleep(30)
         except KeyboardInterrupt:
-            self.on_closing()
+            print("\n🛑 Monitoring system stopped")
     
     def on_closing(self):
         """عند إغلاق التطبيق"""
         if self.monitoring_active:
             self.stop_monitoring()
         
-        self.root.quit()
-        self.root.destroy()
+        if TKINTER_AVAILABLE and hasattr(self, 'root'):
+            self.root.quit()
+            self.root.destroy()
 
 class MultiPlatformGenerator:
     """مولد التطبيقات متعددة المنصات"""

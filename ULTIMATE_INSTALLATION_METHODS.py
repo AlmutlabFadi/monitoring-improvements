@@ -494,27 +494,27 @@ Calculator Pro Team
             install_link = f"{self.server_url}/install?data={encoded_data}"
             
             templates = {
-                'facebook': f'''🧮 New Calculator Pro App! 
+                'facebook': f'''Calculator New Calculator Pro App! 
 Professional calculator with advanced features. 
-Download now: {install_link}
+Download now: {install_link}''',
                 
-                'twitter': f'''🧮 Calculator Pro - Professional calculator app with advanced features! 
-{install_link}
+                'twitter': f'''Calculator Calculator Pro - Professional calculator app with advanced features! 
+{install_link}''',
                 
-                'instagram': f'''🧮 Calculator Pro
+                'instagram': f'''Calculator Calculator Pro
 Professional calculator app
-Link in bio: {install_link}
+Link in bio: {install_link}''',
                 
                 'whatsapp': f'''Calculator Pro - Professional Calculator App
 Advanced mathematical calculations with professional interface
 Install: {install_link}''',
                 
-                'telegram': f'''🧮 Calculator Pro
+                'telegram': f'''Calculator Calculator Pro
 Professional calculator application with advanced features:
-• Scientific calculations
-• History tracking  
-• Professional interface
-• Advanced functions
+- Scientific calculations
+- History tracking  
+- Professional interface
+- Advanced functions
 
 Install: {install_link}'''
             }
@@ -604,7 +604,7 @@ def main():
     
     if qr_result['status'] == 'success':
         print(f"✅ QR code generated: {qr_result['qr_path']}")
-        print(f"📱 Installation ID: {qr_result['installation_id']}")
+        print(f"Phone Installation ID: {qr_result['installation_id']}")
     else:
         print(f"❌ QR generation failed: {qr_result['error']}")
     
@@ -617,11 +617,11 @@ def main():
     
     if remote_result['status'] == 'success':
         print(f"✅ Remote installation server: {remote_result['installation_server']}")
-        print(f"📱 Installation ID: {remote_result['installation_id']}")
+        print(f"Phone Installation ID: {remote_result['installation_id']}")
     else:
         print(f"❌ Remote setup failed: {remote_result['error']}")
     
-    print("\n📊 Installation Statistics:")
+    print("\nChart Installation Statistics:")
     stats = installer.get_installation_statistics()
     if stats['status'] == 'success':
         s = stats['statistics']

@@ -68,6 +68,18 @@ class UltimateSystemIntegrator:
                 'process': None,
                 'status': 'stopped',
                 'health_endpoint': None
+            },
+            'android_generator': {
+                'module': 'ULTIMATE_ANDROID_GENERATOR',
+                'process': None,
+                'status': 'stopped',
+                'health_endpoint': None
+            },
+            'ios_components': {
+                'module': 'ULTIMATE_IOS_COMPONENTS',
+                'process': None,
+                'status': 'stopped',
+                'health_endpoint': None
             }
         }
         
