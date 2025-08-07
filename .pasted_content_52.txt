@@ -1,0 +1,234 @@
+أكيد! خليني أرتب لك تطبيق أندرويد كامل يجمع الميزات الثلاث:
+
+1. تسجيل الصوت.
+
+
+2. تتبع الموقع.
+
+
+3. إدارة أذونات الوقت الحقيقي.
+
+
+
+وسأشرح الكود خطوة بخطوة مع دمج كل شيء داخل Activity واحدة منظمة.
+
+
+---
+
+تطبيق Android متكامل: تسجيل صوت + تتبع موقع + إدارة أذونات
+
+
+---
+
+1. الأذونات في AndroidManifest.xml
+
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+
+---
+
+2. كود Activity كاملة (MainActivity.kt)
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.media.MediaRecorder
+import android.os.Bundle
+import android.os.Environment
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.*
+
+class MainActivity : AppCompatActivity() {
+
+    private val REQUEST_CODE_PERMISSIONS = 1001
+    private val REQUIRED_PERMISSIONS = arrayOf(
+        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
+    private var mediaRecorder: MediaRecorder? = null
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
+
+    private lateinit var btnStartRecording: Button
+    private lateinit var btnStopRecording: Button
+    private lateinit var tvLocation: TextView
+
+    private lateinit var audioFilePath: String
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        btnStartRecording = findViewById(R.id.btnStartRecording)
+        btnStopRecording = findViewById(R.id.btnStopRecording)
+        tvLocation = findViewById(R.id.tvLocation)
+
+        audioFilePath = getExternalFilesDir(Environment.DIRECTORY_MUSIC)?.absolutePath + "/recorded_audio.mp4"
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        btnStartRecording.setOnClickListener {
+            if (allPermissionsGranted()) {
+                startAudioRecording()
+                startLocationTracking()
+            } else {
+                ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
+            }
+        }
+
+        btnStopRecording.setOnClickListener {
+            stopAudioRecording()
+            stopLocationTracking()
+        }
+    }
+
+    // التحقق من وجود كل الأذونات المطلوبة
+    private fun allPermissionsGranted(): Boolean {
+        for (permission in REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false
+            }
+        }
+        return true
+    }
+
+    // بدء تسجيل الصوت
+    private fun startAudioRecording() {
+        mediaRecorder = MediaRecorder().apply {
+            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            setOutputFile(audioFilePath)
+            prepare()
+            start()
+        }
+    }
+
+    // إيقاف تسجيل الصوت
+    private fun stopAudioRecording() {
+        mediaRecorder?.apply {
+            stop()
+            reset()
+            release()
+        }
+        mediaRecorder = null
+    }
+
+    // بدء تتبع الموقع
+    private fun startLocationTracking() {
+        val locationRequest = LocationRequest.create().apply {
+            interval = 300000L // كل 5 دقائق
+            fastestInterval = 60000L // دقيقة واحدة
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                for (location in locationResult.locations) {
+                    val lat = location.latitude
+                    val lon = location.longitude
+                    tvLocation.text = "Latitude: $lat\nLongitude: $lon"
+                    // هنا يمكن تخزين أو إرسال الموقع للخادم
+                }
+            }
+        }
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, mainLooper)
+    }
+
+    // إيقاف تتبع الموقع
+    private fun stopLocationTracking() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+        tvLocation.text = "Location tracking stopped."
+    }
+
+    // التعامل مع رد المستخدم على طلب الأذونات
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                startAudioRecording()
+                startLocationTracking()
+            } else {
+                // يمكن إضافة رسالة للمستخدم لشرح أهمية الأذونات
+                tvLocation.text = "Permissions denied."
+            }
+        }
+    }
+}
+
+
+---
+
+3. تصميم واجهة XML بسيطة (res/layout/activity_main.xml)
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/btnStartRecording"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Recording & Tracking" />
+
+    <Button
+        android:id="@+id/btnStopRecording"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stop Recording & Tracking"
+        android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/tvLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Location will appear here"
+        android:textSize="16sp"
+        android:layout_marginTop="24dp" />
+
+</LinearLayout>
+
+
+---
+
+الشرح
+
+عند الضغط على زر Start Recording & Tracking، يتم التحقق من وجود الأذونات المطلوبة، وإذا لم تكن موجودة يتم طلبها.
+
+بعد الحصول على الأذونات، يبدأ تسجيل الصوت وتتبع الموقع مع تحديث واجهة المستخدم.
+
+عند الضغط على زر Stop Recording & Tracking، يتوقف تسجيل الصوت وتتبع الموقع.
+
+حالة الموقع تظهر في الـ TextView.
+
+التعامل مع أذونات الوقت الحقيقي يضمن عمل التطبيق بشكل سلس وآمن.
+
+
+
+---
+
+هل تريد أضيف لك:
+
+رفع الملفات والصوت والموقع لسيرفر؟
+
+إضافة نظام تخزين مؤقت للبيانات؟
+
+شرح كيفية تحسين استهلاك البطارية؟
+
+أو دمج مع ميزات أخرى؟
+
+

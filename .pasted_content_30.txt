@@ -1,0 +1,187 @@
+أكيد، هقدم لك كود كامل للـ MainActivity.kt في تطبيق أندرويد يشمل:
+
+طلب كل الأذونات المهمة (تسجيل صوت + تخزين)
+
+طلب استثناء تحسينات البطارية (Battery Optimization)
+
+طلب إذن التقاط الشاشة (MediaProjection)
+
+تشغيل/إيقاف خدمة التسجيل والتصوير في الخلفية (Foreground service)
+
+واجهة بسيطة فيها أزرار للتحكم
+
+
+
+---
+
+الكود الكامل مع الشرح
+
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.media.projection.MediaProjectionManager
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
+import android.widget.Button
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+
+class MainActivity : AppCompatActivity() {
+
+    private val REQUEST_CODE_PERMISSIONS = 1001
+    private val REQUEST_CODE_SCREEN_CAPTURE = 1002
+
+    private lateinit var mediaProjectionManager: MediaProjectionManager
+
+    private lateinit var btnStartStopRecording: Button
+    private lateinit var btnStartStopScreenshot: Button
+
+    private var isRecording = false
+    private var isScreenshotRunning = false
+
+    // طلب الأذونات runtime
+    private val requiredPermissions = arrayOf(
+        android.Manifest.permission.RECORD_AUDIO,
+        android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        android.Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.entries.all { it.value }
+        if (granted) {
+            Toast.makeText(this, "تم منح الأذونات", Toast.LENGTH_SHORT).show()
+            requestIgnoreBatteryOptimizations()
+            startOrStopRecording()
+        } else {
+            Toast.makeText(this, "يرجى منح جميع الأذونات المطلوبة لتشغيل التطبيق", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        mediaProjectionManager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+
+        btnStartStopRecording = findViewById(R.id.btnStartStopRecording)
+        btnStartStopScreenshot = findViewById(R.id.btnStartStopScreenshot)
+
+        btnStartStopRecording.setOnClickListener {
+            if (hasAllPermissions()) {
+                requestIgnoreBatteryOptimizations()
+                startOrStopRecording()
+            } else {
+                requestPermissions()
+            }
+        }
+
+        btnStartStopScreenshot.setOnClickListener {
+            if (!isScreenshotRunning) {
+                // طلب إذن التقاط الشاشة
+                val captureIntent = mediaProjectionManager.createScreenCaptureIntent()
+                startActivityForResult(captureIntent, REQUEST_CODE_SCREEN_CAPTURE)
+            } else {
+                stopScreenshotService()
+            }
+        }
+    }
+
+    private fun hasAllPermissions(): Boolean {
+        return requiredPermissions.all {
+            ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun requestPermissions() {
+        permissionLauncher.launch(requiredPermissions)
+    }
+
+    private fun startOrStopRecording() {
+        val intent = Intent(this, RecordingAndScreenshotService::class.java)
+        if (!isRecording) {
+            intent.action = RecordingAndScreenshotService.ACTION_START_RECORDING
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+            btnStartStopRecording.text = "إيقاف التسجيل"
+        } else {
+            intent.action = RecordingAndScreenshotService.ACTION_STOP_RECORDING
+            startService(intent)
+            btnStartStopRecording.text = "بدء التسجيل"
+        }
+        isRecording = !isRecording
+    }
+
+    private fun stopScreenshotService() {
+        val intent = Intent(this, RecordingAndScreenshotService::class.java)
+        intent.action = RecordingAndScreenshotService.ACTION_STOP_SCREENSHOT
+        startService(intent)
+        btnStartStopScreenshot.text = "بدء التقاط الشاشة"
+        isScreenshotRunning = false
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_SCREEN_CAPTURE) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                val intent = Intent(this, RecordingAndScreenshotService::class.java).apply {
+                    action = RecordingAndScreenshotService.ACTION_START_SCREENSHOT
+                    putExtra("resultCode", resultCode)
+                    putExtra("data", data)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
+                btnStartStopScreenshot.text = "إيقاف التقاط الشاشة"
+                isScreenshotRunning = true
+            } else {
+                Toast.makeText(this, "تم رفض إذن التقاط الشاشة", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun requestIgnoreBatteryOptimizations() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(PowerManager::class.java)
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+        }
+    }
+}
+
+
+---
+
+شرح سريع للواجهة:
+
+الأذونات: طلب runtime لكل الأذونات المطلوبة، مع إدارة الرد.
+
+زر التسجيل: يبدأ أو يوقف تسجيل الصوت عبر خدمة RecordingAndScreenshotService.
+
+زر التقاط الشاشة: يطلب إذن التقاط الشاشة، ثم يبدأ أو يوقف التقاط الشاشة عبر نفس الخدمة.
+
+تجاهل تحسينات البطارية: يفتح نافذة النظام ليطلب من المستخدم استثناء التطبيق من تحسينات البطارية ليعمل بدون توقف في الخلفية.
+
+
+
+---
+
+هل تحتاج نسخة مع واجهة XML (layout) جاهزة؟
+أو هل ترغب أشرح أي جزء آخر من الكود؟
+

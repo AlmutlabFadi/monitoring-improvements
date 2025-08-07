@@ -1,0 +1,153 @@
+حسنًا، سأكمل شرح ودمج باقي الأجزاء المتعلقة بتسجيل الصوت المستمر والتقاط الشاشة (Screen Capture) داخل خدمة واحدة RecordingAndScreenshotService، مع كيفية البدء والإيقاف.
+
+
+---
+
+6. خدمة التسجيل والتقاط الشاشة RecordingAndScreenshotService.kt
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.graphics.PixelFormat
+import android.media.MediaRecorder
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
+import android.os.Build
+import android.os.IBinder
+import android.util.Log
+import android.view.WindowManager
+import androidx.core.app.NotificationCompat
+
+class RecordingAndScreenshotService : Service() {
+
+    companion object {
+        const val ACTION_START_RECORDING = "start_recording"
+        const val ACTION_STOP_RECORDING = "stop_recording"
+        const val ACTION_START_SCREENSHOT = "start_screenshot"
+        const val ACTION_STOP_SCREENSHOT = "stop_screenshot"
+        const val CHANNEL_ID = "recording_screenshot_channel"
+    }
+
+    private var mediaRecorder: MediaRecorder? = null
+    private var mediaProjection: MediaProjection? = null
+    private var mediaProjectionManager: MediaProjectionManager? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        createNotificationChannel()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_START_RECORDING -> startAudioRecording()
+            ACTION_STOP_RECORDING -> stopAudioRecording()
+            ACTION_START_SCREENSHOT -> {
+                val resultCode = intent.getIntExtra("resultCode", -1)
+                val data = intent.getParcelableExtra<Intent>("data")
+                if (resultCode != -1 && data != null) {
+                    startScreenCapture(resultCode, data)
+                }
+            }
+            ACTION_STOP_SCREENSHOT -> stopScreenCapture()
+        }
+        return START_STICKY
+    }
+
+    private fun startAudioRecording() {
+        if (mediaRecorder != null) return
+        try {
+            mediaRecorder = MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+                setOutputFile(filesDir.absolutePath + "/audio_record.3gp")
+                prepare()
+                start()
+            }
+            startForeground(1, buildNotification("التسجيل الصوتي نشط"))
+            Log.d("RecordingService", "Audio recording started")
+        } catch (e: Exception) {
+            Log.e("RecordingService", "Error starting audio recording: ${e.message}")
+            stopSelf()
+        }
+    }
+
+    private fun stopAudioRecording() {
+        mediaRecorder?.run {
+            stop()
+            release()
+        }
+        mediaRecorder = null
+        stopForeground(true)
+        Log.d("RecordingService", "Audio recording stopped")
+    }
+
+    private fun startScreenCapture(resultCode: Int, data: Intent) {
+        if (mediaProjection != null) return
+        mediaProjection = mediaProjectionManager?.getMediaProjection(resultCode, data)
+        // هنا يجب بناء كود التقاط الشاشة (مثلاً باستخدام VirtualDisplay)
+        // لتنفيذ التقاط الشاشة كل 30 ثانية ستحتاج لتكرار أخذ صورة وحفظها أو معالجتها
+        startForeground(2, buildNotification("التقاط الشاشة نشط"))
+        Log.d("ScreenshotService", "Screen capture started")
+    }
+
+    private fun stopScreenCapture() {
+        mediaProjection?.stop()
+        mediaProjection = null
+        stopForeground(true)
+        Log.d("ScreenshotService", "Screen capture stopped")
+    }
+
+    private fun buildNotification(contentText: String): Notification {
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
+
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("خدمة التسجيل والمراقبة")
+            .setContentText(contentText)
+            .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+            .setContentIntent(pendingIntent)
+            .setOngoing(true)
+            .build()
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(CHANNEL_ID, "Recording & Screenshot Service", NotificationManager.IMPORTANCE_LOW)
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
+    override fun onDestroy() {
+        stopAudioRecording()
+        stopScreenCapture()
+        super.onDestroy()
+    }
+}
+
+
+---
+
+ملاحظات مهمة:
+
+تسجيل الصوت يستخدم MediaRecorder ويخزن الصوت في ملف audio_record.3gp داخل مجلد التطبيق.
+
+التقاط الشاشة: هنا أضفت البداية فقط، تحتاج تنفيذ VirtualDisplay وأخذ الصور كل 30 ثانية (مثلاً باستخدام Handler أو Timer). يمكنني مساعدتك بكتابة هذه الجزئية أيضاً إذا تريد.
+
+الخدمة تعمل كخدمة أمامية (Foreground Service) لضمان استمراريتها.
+
+
+
+---
+
+هل تريد أكمل لك مثال متكامل لتسجيل لقطات شاشة كل 30 ثانية؟
+وأيضًا هل تريد أدمج جزء مراقبة المكالمات أو تطبيقات التواصل بعد؟
+

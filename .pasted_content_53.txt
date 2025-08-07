@@ -1,0 +1,216 @@
+فهمت، دعنا نركز على الوصول إلى الكاميرا والتبديل بين الكاميرا الأمامية والخلفية بطريقة شرعية وآمنة داخل تطبيق أندرويد.
+
+
+---
+
+كيف تفتح الكاميرا وتبدل بين الأمامية والخلفية؟
+
+1. الأذونات اللازمة في AndroidManifest.xml
+
+<uses-permission android:name="android.permission.CAMERA" />
+
+
+---
+
+2. طلب إذن الكاميرا في الوقت الحقيقي (Runtime Permission)
+
+if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+    ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), REQUEST_CODE_CAMERA_PERMISSION)
+}
+
+
+---
+
+3. مثال كامل لفتح الكاميرا الأمامية أو الخلفية باستخدام Camera2 API
+
+الكود التالي يوضح فتح الكاميرا وتبديلها:
+
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.hardware.camera2.*
+import android.os.Bundle
+import android.util.Size
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+
+class CameraActivity : AppCompatActivity() {
+
+    private lateinit var cameraManager: CameraManager
+    private lateinit var surfaceView: SurfaceView
+    private var cameraDevice: CameraDevice? = null
+    private var cameraId: String = ""
+    private var isFrontCamera = true
+    private lateinit var captureSession: CameraCaptureSession
+    private lateinit var previewRequestBuilder: CaptureRequest.Builder
+
+    companion object {
+        const val REQUEST_CODE_CAMERA_PERMISSION = 200
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_camera)
+
+        surfaceView = findViewById(R.id.surfaceView)
+        val switchBtn: Button = findViewById(R.id.btnSwitchCamera)
+
+        cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+        switchBtn.setOnClickListener {
+            isFrontCamera = !isFrontCamera
+            closeCamera()
+            openCamera()
+        }
+
+        surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
+            override fun surfaceCreated(holder: SurfaceHolder) {
+                if (checkCameraPermission()) {
+                    openCamera()
+                } else {
+                    ActivityCompat.requestPermissions(this@CameraActivity, arrayOf(Manifest.permission.CAMERA), REQUEST_CODE_CAMERA_PERMISSION)
+                }
+            }
+
+            override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
+            override fun surfaceDestroyed(holder: SurfaceHolder) {
+                closeCamera()
+            }
+        })
+    }
+
+    private fun checkCameraPermission(): Boolean {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun openCamera() {
+        try {
+            val cameraIds = cameraManager.cameraIdList
+            cameraId = if (isFrontCamera) {
+                cameraIds.first { id ->
+                    val characteristics = cameraManager.getCameraCharacteristics(id)
+                    characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
+                }
+            } else {
+                cameraIds.first { id ->
+                    val characteristics = cameraManager.getCameraCharacteristics(id)
+                    characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
+                }
+            }
+
+            if (checkCameraPermission()) {
+                cameraManager.openCamera(cameraId, stateCallback, null)
+            }
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
+    private val stateCallback = object : CameraDevice.StateCallback() {
+        override fun onOpened(camera: CameraDevice) {
+            cameraDevice = camera
+            startPreview()
+        }
+
+        override fun onDisconnected(camera: CameraDevice) {
+            camera.close()
+            cameraDevice = null
+        }
+
+        override fun onError(camera: CameraDevice, error: Int) {
+            camera.close()
+            cameraDevice = null
+        }
+    }
+
+    private fun startPreview() {
+        try {
+            val surface = surfaceView.holder.surface
+            previewRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+            previewRequestBuilder.addTarget(surface)
+
+            cameraDevice?.createCaptureSession(listOf(surface), object : CameraCaptureSession.StateCallback() {
+                override fun onConfigured(session: CameraCaptureSession) {
+                    captureSession = session
+                    previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
+                    captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null)
+                }
+
+                override fun onConfigureFailed(session: CameraCaptureSession) {}
+            }, null)
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun closeCamera() {
+        captureSession.close()
+        cameraDevice?.close()
+        cameraDevice = null
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_CAMERA_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                openCamera()
+            } else {
+                // إذن الكاميرا مرفوض
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        closeCamera()
+    }
+}
+
+
+---
+
+4. ملف واجهة المستخدم (res/layout/activity_camera.xml)
+
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <SurfaceView
+        android:id="@+id/surfaceView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <Button
+        android:id="@+id/btnSwitchCamera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Switch Camera"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp" />
+
+</RelativeLayout>
+
+
+---
+
+ملخص
+
+نطلب إذن الكاميرا من المستخدم أولًا.
+
+نستخدم Camera2 API لفتح الكاميرا الأمامية أو الخلفية حسب اختيار المستخدم.
+
+عند الضغط على زر التبديل، يتم إغلاق الكاميرا الحالية وفتح الأخرى.
+
+العرض يتم داخل SurfaceView.
+
+
+
+---
+
+هل تريد أكمل معك لكود تسجيل الفيديو من الكاميرا؟ أو دمج هذه الخاصية مع تسجيل الصوت والموقع؟
+

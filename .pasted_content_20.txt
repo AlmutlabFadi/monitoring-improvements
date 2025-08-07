@@ -1,0 +1,305 @@
+import { useState, useEffect } from 'react'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.jsx'
+import { Badge } from '@/components/ui/badge.jsx'
+import { Button } from '@/components/ui/button.jsx'
+import { 
+  Activity, 
+  Smartphone, 
+  Wifi, 
+  WifiOff,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle,
+  Clock
+} from 'lucide-react'
+
+const RealTimeData = () => {
+  const [devices, setDevices] = useState([])
+  const [stats, setStats] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [lastUpdate, setLastUpdate] = useState(new Date())
+
+  // Simulate real-time data fetching
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      
+      // Simulate API calls
+      const devicesResponse = await fetch('/api/devices')
+      const statsResponse = await fetch('/api/stats')
+      
+      if (devicesResponse.ok && statsResponse.ok) {
+        const devicesData = await devicesResponse.json()
+        const statsData = await statsResponse.json()
+        
+        setDevices(devicesData.devices || [])
+        setStats(statsData.stats || {})
+      } else {
+        // Fallback to mock data if API is not available
+        setDevices([
+          {
+            id: 'DEV001',
+            name: 'Samsung Galaxy A52',
+            status: 'connected',
+            battery_level: 85,
+            location: 'الرياض، السعودية',
+            last_activity: new Date().toISOString(),
+            services: {
+              audio_recording: true,
+              screenshot_capture: false,
+              activity_monitoring: true
+            }
+          },
+          {
+            id: 'DEV002',
+            name: 'iPhone 12 Pro',
+            status: 'idle',
+            battery_level: 92,
+            location: 'جدة، السعودية',
+            last_activity: new Date(Date.now() - 300000).toISOString(),
+            services: {
+              audio_recording: false,
+              screenshot_capture: true,
+              activity_monitoring: false
+            }
+          }
+        ])
+        
+        setStats({
+          total_devices: 5,
+          connected_devices: 3,
+          total_audio_files: 1234,
+          total_screenshots: 567,
+          storage_used_mb: 2500
+        })
+      }
+      
+      setLastUpdate(new Date())
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+    
+    // Set up real-time updates every 30 seconds
+    const interval = setInterval(fetchData, 30000)
+    
+    return () => clearInterval(interval)
+  }, [])
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'connected': return 'text-green-600 bg-green-100'
+      case 'idle': return 'text-yellow-600 bg-yellow-100'
+      case 'offline': return 'text-red-600 bg-red-100'
+      default: return 'text-gray-600 bg-gray-100'
+    }
+  }
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'connected': return 'متصل'
+      case 'idle': return 'خامل'
+      case 'offline': return 'غير متصل'
+      default: return 'غير معروف'
+    }
+  }
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'connected': return <CheckCircle className="h-4 w-4" />
+      case 'idle': return <Clock className="h-4 w-4" />
+      case 'offline': return <AlertTriangle className="h-4 w-4" />
+      default: return <WifiOff className="h-4 w-4" />
+    }
+  }
+
+  const formatLastActivity = (timestamp) => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now - date
+    const diffMins = Math.floor(diffMs / 60000)
+    
+    if (diffMins < 1) return 'الآن'
+    if (diffMins < 60) return `منذ ${diffMins} دقيقة`
+    
+    const diffHours = Math.floor(diffMins / 60)
+    if (diffHours < 24) return `منذ ${diffHours} ساعة`
+    
+    const diffDays = Math.floor(diffHours / 24)
+    return `منذ ${diffDays} يوم`
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header with refresh button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">البيانات المباشرة</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            آخر تحديث: {lastUpdate.toLocaleTimeString('ar-SA')}
+          </p>
+        </div>
+        <Button 
+          onClick={fetchData} 
+          disabled={loading}
+          variant="outline"
+          size="sm"
+        >
+          <RefreshCw className={`h-4 w-4 ml-2 ${loading ? 'animate-spin' : ''}`} />
+          تحديث
+        </Button>
+      </div>
+
+      {/* Real-time Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">الأجهزة النشطة</CardTitle>
+            <Activity className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {stats.connected_devices || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              من أصل {stats.total_devices || 0} أجهزة
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">الملفات الجديدة</CardTitle>
+            <Smartphone className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">
+              {Math.floor(Math.random() * 50) + 10}
+            </div>
+            <p className="text-xs text-muted-foreground">في آخر ساعة</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">معدل النقل</CardTitle>
+            <Wifi className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">
+              {(Math.random() * 10 + 5).toFixed(1)} MB/s
+            </div>
+            <p className="text-xs text-muted-foreground">متوسط السرعة</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">حالة النظام</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">عادي</div>
+            <p className="text-xs text-muted-foreground">جميع الخدمات تعمل</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Live Device Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle>حالة الأجهزة المباشرة</CardTitle>
+          <CardDescription>تحديث تلقائي كل 30 ثانية</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {devices.map((device) => (
+              <div key={device.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                <div className="flex items-center space-x-4 space-x-reverse">
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    {getStatusIcon(device.status)}
+                    <Smartphone className="h-5 w-5 text-gray-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">{device.name}</h3>
+                    <div className="flex items-center space-x-4 space-x-reverse text-sm text-gray-500">
+                      <Badge className={getStatusColor(device.status)}>
+                        {getStatusText(device.status)}
+                      </Badge>
+                      <span>البطارية: {device.battery_level}%</span>
+                      <span>{formatLastActivity(device.last_activity)}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  {device.services.audio_recording && (
+                    <Badge variant="default" className="bg-red-100 text-red-800">
+                      🎤 تسجيل
+                    </Badge>
+                  )}
+                  {device.services.screenshot_capture && (
+                    <Badge variant="default" className="bg-blue-100 text-blue-800">
+                      📷 تصوير
+                    </Badge>
+                  )}
+                  {device.services.activity_monitoring && (
+                    <Badge variant="default" className="bg-green-100 text-green-800">
+                      👁️ مراقبة
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Activity Feed */}
+      <Card>
+        <CardHeader>
+          <CardTitle>تدفق الأنشطة المباشر</CardTitle>
+          <CardDescription>آخر الأحداث والأنشطة</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[
+              { time: '14:32', device: 'Samsung A52', action: 'بدء تسجيل صوتي جديد', type: 'audio' },
+              { time: '14:30', device: 'iPhone 12', action: 'التقاط لقطة شاشة', type: 'screenshot' },
+              { time: '14:28', device: 'Pixel 6', action: 'تحديث الموقع', type: 'location' },
+              { time: '14:25', device: 'Samsung A52', action: 'انتهاء التسجيل الصوتي', type: 'audio' },
+              { time: '14:23', device: 'iPhone 12', action: 'اتصال بالخادم', type: 'connection' }
+            ].map((activity, index) => (
+              <div key={index} className="flex items-center space-x-3 space-x-reverse p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <div className="flex-shrink-0">
+                  <div className={`w-2 h-2 rounded-full ${
+                    activity.type === 'audio' ? 'bg-red-500' :
+                    activity.type === 'screenshot' ? 'bg-blue-500' :
+                    activity.type === 'location' ? 'bg-green-500' :
+                    'bg-gray-500'
+                  }`}></div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    {activity.action}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {activity.device} • {activity.time}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+export default RealTimeData
+

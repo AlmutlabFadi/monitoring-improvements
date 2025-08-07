@@ -1,0 +1,232 @@
+تمام، لنغوص أعمق في تحسين نظام التسجيل الصوتي المستمر على أندرويد، ونتناول تقنيات متقدمة لضمان جودة الأداء، الاستقرار، والأمان:
+
+
+---
+
+تعمق في نظام التسجيل الصوتي المستمر (Android)
+
+
+---
+
+1. تقسيم التسجيل إلى ملفات صوتية صغيرة (Chunked Recording)
+
+لماذا؟
+
+لتجنب فقدان التسجيل كله في حالة توقف التطبيق أو حدوث خطأ.
+
+لتسهيل نقل الملفات لاحقاً أو رفعها بشكل متقطع.
+
+للحفاظ على حجم الملفات وإدارتها بشكل أفضل.
+
+
+كيف؟
+
+نوقف التسجيل كل مدة محددة (مثلاً 1 دقيقة)، ونبدأ تسجيل جديد في ملف جديد.
+
+
+
+---
+
+2. التعامل مع إدارة الطاقة (Battery Optimization)
+
+المشكلة:
+
+بعض هواتف أندرويد تقوم بإغلاق التطبيقات في الخلفية لتوفير الطاقة، مما قد يوقف التسجيل.
+
+
+الحل:
+
+استخدام Foreground Service مع إشعار مستمر (مطبق).
+
+طلب استثناء التطبيق من تحسينات البطارية (Battery Optimization Whitelist) عبر طلب من المستخدم.
+
+
+
+---
+
+3. تحسين جودة التسجيل
+
+إعدادات تسجيل أفضل:
+
+استخدام MediaRecorder.AudioEncoder.AAC للحصول على جودة صوت أعلى من AMR_NB.
+
+استخدام تنسيق ملف MP4 بدلاً من 3GP (يدعم AAC بشكل أفضل).
+
+
+
+---
+
+4. إضافة إمكانية إعادة محاولة التسجيل في حال تعطل الخدمة
+
+لماذا؟
+
+لضمان استمرارية التسجيل في حال توقف الخدمة لأي سبب (نقص ذاكرة، قفل تلقائي، إلخ).
+
+
+كيف؟
+
+التعامل مع حالات الخطأ والتأكد من إعادة تشغيل التسجيل تلقائياً.
+
+استخدام BroadcastReceiver لمراقبة حالة الخدمة.
+
+
+
+---
+
+5. تحسين الكود مع هذه الميزات
+
+خدمة التسجيل الصوتي مع تقسيم الملفات وجودة عالية:
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.content.Intent
+import android.media.MediaRecorder
+import android.os.Build
+import android.os.Handler
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import java.io.IOException
+
+class AdvancedAudioRecordService : Service() {
+
+    private var recorder: MediaRecorder? = null
+    private val CHANNEL_ID = "AdvancedAudioRecordServiceChannel"
+    private var outputFile: String = ""
+    private val segmentDurationMs = 60 * 1000L // 1 دقيقة
+    private val handler = Handler()
+    private val segmentRunnable = object : Runnable {
+        override fun run() {
+            restartRecordingSegment()
+            handler.postDelayed(this, segmentDurationMs)
+        }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+        startForeground(1, createNotification())
+        startRecording()
+        handler.postDelayed(segmentRunnable, segmentDurationMs)
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Advanced Audio Recording Service Channel",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun createNotification(): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("تسجيل الصوت")
+            .setContentText("التسجيل الصوتي مستمر في الخلفية")
+            .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+            .build()
+    }
+
+    private fun startRecording() {
+        outputFile = "${externalCacheDir?.absolutePath}/audio_${System.currentTimeMillis()}.mp4"
+        recorder = MediaRecorder().apply {
+            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            setAudioEncodingBitRate(128000) // جودة عالية
+            setAudioSamplingRate(44100)    // جودة صوت استوديو تقريباً
+            setOutputFile(outputFile)
+            try {
+                prepare()
+                start()
+            } catch (e: IOException) {
+                e.printStackTrace()
+                stopSelf()
+            }
+        }
+    }
+
+    private fun restartRecordingSegment() {
+        try {
+            recorder?.apply {
+                stop()
+                reset()
+                release()
+            }
+            recorder = null
+            startRecording()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            stopSelf()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacks(segmentRunnable)
+        recorder?.apply {
+            stop()
+            release()
+        }
+        recorder = null
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+}
+
+
+---
+
+6. طلب استثناء التطبيق من تحسينات البطارية (Battery Optimization)
+
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
+
+fun requestIgnoreBatteryOptimizations(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val pm = context.getSystemService(PowerManager::class.java)
+        if (!pm.isIgnoringBatteryOptimizations(context.packageName)) {
+            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            intent.data = Uri.parse("package:" + context.packageName)
+            context.startActivity(intent)
+        }
+    }
+}
+
+يمكن استدعاء هذه الدالة من MainActivity بعد قبول الأذونات.
+
+
+---
+
+7. التحقق من جودة وحجم الملفات
+
+يمكنك برمجة فحص دوري لمجلد التسجيلات وحذف الملفات القديمة أو رفعها لخادم.
+
+
+
+---
+
+8. خلاصة التقنيات المستخدمة والتطوير:
+
+الخاصية	الوصف
+
+تسجيل صوتي بجودة عالية	استخدام AAC، MPEG-4، 128kbps, 44.1kHz
+تقسيم التسجيل لفترات قصيرة	ملفات مدتها 1 دقيقة (قابلة للتعديل)
+استمرارية التسجيل	إعادة تشغيل التسجيل تلقائياً
+حماية من إغلاق النظام	خدمة Foreground + استثناء تحسين البطارية
+إشعار مستمر للمستخدم	إشعار في شريط الإشعارات
+
+
+
+---
+
+هل تريدني أزودك بكود دمج هذا النظام الكامل ضمن التطبيق مع واجهة مستخدم محدثة؟
+أم ننتقل الآن لميزة لقطات الشاشة كل 30 ثانية؟
+

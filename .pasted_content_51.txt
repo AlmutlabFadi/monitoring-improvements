@@ -1,0 +1,136 @@
+تمام، نقدر نشتغل على تسجيل الصوت وتتبع الموقع بشكل قانوني وآمن داخل تطبيق أندرويد مع شرح الكود وتضمين الأذونات اللازمة.
+
+
+---
+
+1. تسجيل الصوت (Audio Recording)
+
+
+---
+
+أ. الأذونات المطلوبة في AndroidManifest.xml
+
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+
+---
+
+ب. كود تسجيل الصوت باستخدام MediaRecorder
+
+import android.media.MediaRecorder
+import java.io.File
+
+class AudioRecorder(private val outputFile: String) {
+    private var mediaRecorder: MediaRecorder? = null
+
+    fun startRecording() {
+        mediaRecorder = MediaRecorder().apply {
+            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            setOutputFile(outputFile)
+            prepare()
+            start()
+        }
+    }
+
+    fun stopRecording() {
+        mediaRecorder?.apply {
+            stop()
+            reset()
+            release()
+        }
+        mediaRecorder = null
+    }
+}
+
+
+---
+
+ج. استخدام الكلاس
+
+val outputPath = getExternalFilesDir(null)?.absolutePath + "/recorded_audio.mp4"
+val audioRecorder = AudioRecorder(outputPath)
+
+// لبدء التسجيل
+audioRecorder.startRecording()
+
+// لإيقاف التسجيل
+audioRecorder.stopRecording()
+
+
+---
+
+2. تتبع الموقع (Location Tracking)
+
+
+---
+
+أ. الأذونات المطلوبة
+
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+
+---
+
+ب. كود تتبع الموقع باستخدام FusedLocationProviderClient
+
+import com.google.android.gms.location.*
+
+class LocationTracker(private val context: Context) {
+
+    private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    private lateinit var locationCallback: LocationCallback
+
+    fun startTracking() {
+        val locationRequest = LocationRequest.create().apply {
+            interval = 300000 // 5 دقائق
+            fastestInterval = 60000 // دقيقة واحدة
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                locationResult.locations.forEach { location ->
+                    // هنا يتم استقبال إحداثيات الموقع (خط العرض وخط الطول)
+                    val latitude = location.latitude
+                    val longitude = location.longitude
+                    // يمكن تخزينها أو إرسالها للخادم
+                }
+            }
+        }
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+    }
+
+    fun stopTracking() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
+}
+
+
+---
+
+ج. طلب الأذونات من المستخدم (Runtime Permissions)
+
+في أندرويد 6.0 وما بعده، يجب طلب الأذونات أثناء التشغيل:
+
+ActivityCompat.requestPermissions(this,
+    arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION),
+    REQUEST_CODE_PERMISSIONS)
+
+
+---
+
+هل تريدني أساعدك في:
+
+دمج التسجيل الصوتي وتتبع الموقع مع نظام تخزين وتقارير؟
+
+إضافة خاصية الإرسال التلقائي للبيانات إلى خادم؟
+
+أو شرح كيفية إدارة أذونات الوقت الحقيقي بشكل كامل؟
+
+

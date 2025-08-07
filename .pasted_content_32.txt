@@ -1,0 +1,411 @@
+تمام، دعنا ندمج ميزة التسجيل الصوتي المستمر مع ميزة التقاط لقطات الشاشة كل 30 ثانية في تطبيق أندرويد واحد متكامل.
+
+
+---
+
+خطوات الدمج بين الخدمتين:
+
+سيكون لدينا خدمة واحدة Foreground Service تدير كلاً من التسجيل الصوتي والتقاط الشاشة.
+
+سنستخدم في MainActivity زر واحد أو زرَين للتحكم بالتسجيل والتقاط الشاشة.
+
+ندمج أكواد التسجيل الصوتي وخدمة MediaProjection داخل خدمة واحدة.
+
+
+
+---
+
+خطة الدمج:
+
+1. في MainActivity:
+
+زر لتشغيل / إيقاف التسجيل الصوتي.
+
+زر لطلب إذن MediaProjection وبدء التقاط الشاشة.
+
+
+
+2. خدمة واحدة RecordingAndScreenshotService:
+
+إدارة MediaRecorder للتسجيل الصوتي.
+
+إدارة MediaProjection + VirtualDisplay + ImageReader للتقاط الشاشة.
+
+جدولة التقاط لقطات الشاشة كل 30 ثانية.
+
+إدارة إشعار Foreground Service واحد.
+
+
+
+
+
+---
+
+الكود الكامل بعد الدمج
+
+
+---
+
+1. MainActivity.kt
+
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.media.projection.MediaProjectionManager
+import android.os.Build
+import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
+import android.widget.Button
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+
+class MainActivity : AppCompatActivity() {
+
+    private val REQUEST_SCREENSHOT = 59706
+    private lateinit var mediaProjectionManager: MediaProjectionManager
+
+    private lateinit var btnRecord: Button
+    private lateinit var btnScreenshot: Button
+
+    private var isRecording = false
+    private var isScreenshotRunning = false
+
+    private val requestPermissionsLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.entries.all { it.value }
+        if (granted) {
+            requestIgnoreBatteryOptimizations()
+            toggleRecording()
+        } else {
+            // إعلام المستخدم برفض الأذونات
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        mediaProjectionManager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+
+        btnRecord = findViewById(R.id.btnStartStop)
+        btnScreenshot = findViewById(R.id.btnScreenshot)
+
+        btnRecord.setOnClickListener {
+            if (checkPermissions()) {
+                requestIgnoreBatteryOptimizations()
+                toggleRecording()
+            } else {
+                requestPermissions()
+            }
+        }
+
+        btnScreenshot.setOnClickListener {
+            if (!isScreenshotRunning) {
+                startActivityForResult(
+                    mediaProjectionManager.createScreenCaptureIntent(),
+                    REQUEST_SCREENSHOT
+                )
+            } else {
+                stopScreenshotService()
+            }
+        }
+    }
+
+    private fun checkPermissions(): Boolean {
+        val recordAudio = ContextCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO)
+        val writeStorage = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        return recordAudio == PackageManager.PERMISSION_GRANTED &&
+                writeStorage == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermissions() {
+        requestPermissionsLauncher.launch(
+            arrayOf(
+                android.Manifest.permission.RECORD_AUDIO,
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
+        )
+    }
+
+    private fun toggleRecording() {
+        val intent = Intent(this, RecordingAndScreenshotService::class.java)
+        if (!isRecording) {
+            intent.action = RecordingAndScreenshotService.ACTION_START_RECORDING
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+            btnRecord.text = "إيقاف التسجيل"
+        } else {
+            intent.action = RecordingAndScreenshotService.ACTION_STOP_RECORDING
+            startService(intent)
+            btnRecord.text = "بدء التسجيل"
+        }
+        isRecording = !isRecording
+    }
+
+    private fun stopScreenshotService() {
+        val intent = Intent(this, RecordingAndScreenshotService::class.java)
+        intent.action = RecordingAndScreenshotService.ACTION_STOP_SCREENSHOT
+        startService(intent)
+        btnScreenshot.text = "بدء التقاط الشاشة"
+        isScreenshotRunning = false
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_SCREENSHOT && resultCode == Activity.RESULT_OK) {
+            data?.let {
+                val intent = Intent(this, RecordingAndScreenshotService::class.java).apply {
+                    action = RecordingAndScreenshotService.ACTION_START_SCREENSHOT
+                    putExtra("resultCode", resultCode)
+                    putExtra("data", it)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(intent)
+                } else {
+                    startService(intent)
+                }
+                btnScreenshot.text = "إيقاف التقاط الشاشة"
+                isScreenshotRunning = true
+            }
+        }
+    }
+
+    private fun requestIgnoreBatteryOptimizations() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                intent.data = android.net.Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+        }
+    }
+}
+
+
+---
+
+2. RecordingAndScreenshotService.kt
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.PixelFormat
+import android.hardware.display.DisplayManager
+import android.hardware.display.VirtualDisplay
+import android.media.ImageReader
+import android.media.MediaRecorder
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
+import android.os.Build
+import android.os.Environment
+import android.os.Handler
+import android.os.IBinder
+import android.util.DisplayMetrics
+import android.util.Log
+import android.view.WindowManager
+import androidx.core.app.NotificationCompat
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.nio.ByteBuffer
+
+class RecordingAndScreenshotService : Service() {
+
+    companion object {
+        const val ACTION_START_RECORDING = "START_RECORDING"
+        const val ACTION_STOP_RECORDING = "STOP_RECORDING"
+        const val ACTION_START_SCREENSHOT = "START_SCREENSHOT"
+        const val ACTION_STOP_SCREENSHOT = "STOP_SCREENSHOT"
+    }
+
+    private var recorder: MediaRecorder? = null
+    private var mediaProjection: MediaProjection? = null
+    private var virtualDisplay: VirtualDisplay? = null
+    private var imageReader: ImageReader? = null
+
+    private val CHANNEL_ID = "RecordingScreenshotServiceChannel"
+    private val handler = Handler()
+    private var width = 0
+    private var height = 0
+    private var density = 0
+
+    private val SCREENSHOT_INTERVAL = 30 * 1000L // 30 ثانية
+    private val RECORDING_SEGMENT_MS = 60 * 1000L // 1 دقيقة
+
+    private var isRecording = false
+    private var isScreenshotRunning = false
+
+    private val screenshotRunnable = object : Runnable {
+        override fun run() {
+            captureScreenshot()
+            handler.postDelayed(this, SCREENSHOT_INTERVAL)
+        }
+    }
+
+    private val recordingSegmentRunnable = object : Runnable {
+        override fun run() {
+            restartRecordingSegment()
+            handler.postDelayed(this, RECORDING_SEGMENT_MS)
+        }
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+        startForeground(1, createNotification())
+        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        val metrics = DisplayMetrics()
+        wm.defaultDisplay.getMetrics(metrics)
+        width = metrics.widthPixels
+        height = metrics.heightPixels
+        density = metrics.densityDpi
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_START_RECORDING -> {
+                if (!isRecording) startRecording()
+            }
+            ACTION_STOP_RECORDING -> {
+                if (isRecording) stopRecording()
+            }
+            ACTION_START_SCREENSHOT -> {
+                if (!isScreenshotRunning) {
+                    val resultCode = intent.getIntExtra("resultCode", -1)
+                    val data = intent.getParcelableExtra<Intent>("data")
+                    if (resultCode == Activity.RESULT_OK && data != null) {
+                        startScreenshot(resultCode, data)
+                    }
+                }
+            }
+            ACTION_STOP_SCREENSHOT -> {
+                if (isScreenshotRunning) stopScreenshot()
+            }
+        }
+        return START_STICKY
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Recording Screenshot Service Channel",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun createNotification(): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("الخدمة قيد التشغيل")
+            .setContentText("التسجيل الصوتي والتقاط الشاشة يعملان في الخلفية")
+            .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+            .build()
+    }
+
+    // ------------- تسجيل صوتي -------------
+
+    private fun startRecording() {
+        recorder = MediaRecorder().apply {
+            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            setAudioEncodingBitRate(128000)
+            setAudioSamplingRate(44100)
+            setOutputFile("${externalCacheDir?.absolutePath}/audio_${System.currentTimeMillis()}.mp4")
+            try {
+                prepare()
+                start()
+                isRecording = true
+                handler.postDelayed(recordingSegmentRunnable, RECORDING_SEGMENT_MS)
+            } catch (e: IOException) {
+                e.printStackTrace()
+                stopSelf()
+            }
+        }
+    }
+
+    private fun restartRecordingSegment() {
+        try {
+            recorder?.apply {
+                stop()
+                reset()
+                release()
+            }
+            recorder = null
+            startRecording()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            stopSelf()
+        }
+    }
+
+    private fun stopRecording() {
+        handler.removeCallbacks(recordingSegmentRunnable)
+        recorder?.apply {
+            stop()
+            release()
+        }
+        recorder = null
+        isRecording = false
+    }
+
+    // ------------- التقاط الشاشة -------------
+
+    private fun startScreenshot(resultCode: Int, data: Intent) {
+        val mProjectionManager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        mediaProjection = mProjectionManager.getMediaProjection(resultCode, data)
+        imageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 2)
+        virtualDisplay = mediaProjection?.createVirtualDisplay(
+            "ScreenCapture",
+            width, height, density,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+            imageReader?.surface, null, handler
+        )
+        isScreenshotRunning = true
+        handler.postDelayed(screenshotRunnable, SCREENSHOT_INTERVAL)
+    }
+
+    private fun captureScreenshot() {
+        val image = imageReader?.acquireLatestImage() ?: return
+        val planes = image.planes
+        val buffer: ByteBuffer = planes[0].buffer
+        val pixelStride = planes[0].pixelStride
+        val rowStride = planes[0].rowStride
+        val rowPadding = rowStride - pixelStride * width
+
+        val bitmap = Bitmap.createBitmap(
+            width + rowPadding / pixelStride,
+            height,
+            Bitmap.Config.ARGB_8888
+        )
+        bitmap.copyPixelsFromBuffer(buffer)
+        image.close()
+
+        saveBitmap(bitmap)
+    }
+
+    private fun saveBitmap(bitmap: Bitmap) {
+        try {
+            val screenshotsDir = File(Environment.getExternalStorageDirectory(), "ScreenshotsApp")
+            if (!screenshotsDir.exists()) screenshotsDir.mkdirs()
+
+            val fileName = "screenshot_${System.currentTimeMillis()}.png"
+            val file = File(screenshotsDir, fileName)
+
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap
+

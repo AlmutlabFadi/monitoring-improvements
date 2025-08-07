@@ -1,0 +1,126 @@
+تمام، ننتقل الآن لكيفية طلب الأذونات اللازمة بشكل صحيح وضمان تشغيل الخدمة بسلاسة في أندرويد، خاصة مع التغييرات التي جاءت في الإصدارات الحديثة (Android 10، 11، 12+).
+
+
+---
+
+1. الأذونات المهمة لتطبيقك:
+
+التسجيل الصوتي
+android.permission.RECORD_AUDIO
+
+كتابة وقراءة التخزين الخارجي (لحفظ التسجيلات ولقطات الشاشة)
+
+قبل Android 10:
+android.permission.WRITE_EXTERNAL_STORAGE
+android.permission.READ_EXTERNAL_STORAGE
+
+Android 10 وما بعده: يفضل استخدام Storage Access Framework أو MediaStore API بدلاً من أذونات التخزين.
+
+
+التقاط الشاشة
+لا يحتاج إذن خاص، لكن يحتاج موافقة المستخدم (موجهة عبر MediaProjection permission dialog).
+
+التشغيل في الخلفية (Foreground service)
+android.permission.FOREGROUND_SERVICE (من Android 9+)
+
+التشغيل مع استثناء من تحسينات البطارية (اختياري)
+لتجنب توقف الخدمة في الخلفية، تطلب من المستخدم تعطيل تحسينات البطارية لتطبيقك.
+
+
+
+---
+
+2. إعلان الأذونات في AndroidManifest.xml:
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.spyapp">
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <!-- تخزين خارجي (في حال دعم أقل من Android 10) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <!-- أذونات أخرى إذا تحتاج -->
+</manifest>
+
+
+---
+
+3. طلب الأذونات أثناء التشغيل (runtime permissions):
+
+private val permissions = arrayOf(
+    android.Manifest.permission.RECORD_AUDIO,
+    android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    android.Manifest.permission.READ_EXTERNAL_STORAGE
+)
+
+private fun checkAndRequestPermissions() {
+    val missingPermissions = permissions.filter {
+        ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
+    }
+    if (missingPermissions.isNotEmpty()) {
+        ActivityCompat.requestPermissions(this, missingPermissions.toTypedArray(), REQUEST_CODE_PERMISSIONS)
+    } else {
+        // الأذونات متوفرة، تابع تشغيل الخدمة
+    }
+}
+
+override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    if (requestCode == REQUEST_CODE_PERMISSIONS) {
+        if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+            // الأذونات كلها مقبولة، تابع التشغيل
+        } else {
+            // اشرح للمستخدم أهمية الأذونات واطلبه يعيد المحاولة
+        }
+    }
+}
+
+
+---
+
+4. طلب استثناء تحسينات البطارية (Battery Optimization Exclusion):
+
+private fun requestIgnoreBatteryOptimizations() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val pm = getSystemService(PowerManager::class.java)
+        if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            intent.data = Uri.parse("package:$packageName")
+            startActivity(intent)
+        }
+    }
+}
+
+
+---
+
+5. بدء الخدمة في المقدمة (Foreground service):
+
+val intent = Intent(this, RecordingAndScreenshotService::class.java)
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    startForegroundService(intent)
+} else {
+    startService(intent)
+}
+
+
+---
+
+ملخص
+
+تأكد من طلب الأذونات المهمة وقت التشغيل.
+
+عند بدء الخدمة، شغلها كـ Foreground service مع إشعار دائم.
+
+اطلب من المستخدم إعفاء التطبيق من تحسينات البطارية لتجنب إيقاف الخدمة في الخلفية.
+
+عند طلب التقاط الشاشة، اطلب إذن المستخدم عبر MediaProjectionManager.
+
+
+هل تود أن أزوّدك بكود كامل للواجهة MainActivity تشمل كل هذه الطلبات مع شرح؟
+أم ترغب في الانتقال للجزء الخاص بـ iOS أو دمج خاصية أخرى؟
+

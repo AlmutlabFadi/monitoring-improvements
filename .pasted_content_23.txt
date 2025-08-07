@@ -1,0 +1,403 @@
+package com.monitoring.app;
+
+import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.media.MediaRecorder;
+import android.os.Bundle;
+import android.os.Handler;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import okhttp3.*;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+public class MainActivity extends Activity {
+    private static final String TAG = "MonitoringApp";
+    private static final int PERMISSION_REQUEST_CODE = 1001;
+    private static final String SERVER_URL = "http://your-server-url.com/api/android";
+    
+    private TextView statusText;
+    private Button connectButton;
+    private Button audioButton;
+    private Button screenshotButton;
+    
+    private MediaRecorder mediaRecorder;
+    private boolean isRecording = false;
+    private boolean isConnected = false;
+    private String deviceId;
+    
+    private OkHttpClient httpClient;
+    private Handler heartbeatHandler;
+    private Runnable heartbeatRunnable;
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        
+        initializeViews();
+        initializeHttpClient();
+        generateDeviceId();
+        requestPermissions();
+        setupHeartbeat();
+    }
+    
+    private void initializeViews() {
+        statusText = findViewById(R.id.status_text);
+        connectButton = findViewById(R.id.connect_button);
+        audioButton = findViewById(R.id.audio_button);
+        screenshotButton = findViewById(R.id.screenshot_button);
+        
+        connectButton.setOnClickListener(v -> toggleConnection());
+        audioButton.setOnClickListener(v -> toggleAudioRecording());
+        screenshotButton.setOnClickListener(v -> takeScreenshot());
+        
+        updateUI();
+    }
+    
+    private void initializeHttpClient() {
+        httpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build();
+    }
+    
+    private void generateDeviceId() {
+        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        if (deviceId == null || deviceId.isEmpty()) {
+            deviceId = "DEVICE_" + System.currentTimeMillis();
+        }
+    }
+    
+    private void requestPermissions() {
+        String[] permissions = {
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+        };
+        
+        boolean allGranted = true;
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                allGranted = false;
+                break;
+            }
+        }
+        
+        if (!allGranted) {
+            ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE);
+        }
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+            
+            if (!allGranted) {
+                Toast.makeText(this, "الصلاحيات مطلوبة لتشغيل التطبيق", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    
+    private void setupHeartbeat() {
+        heartbeatHandler = new Handler();
+        heartbeatRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (isConnected) {
+                    sendHeartbeat();
+                    heartbeatHandler.postDelayed(this, 30000); // 30 seconds
+                }
+            }
+        };
+    }
+    
+    private void toggleConnection() {
+        if (isConnected) {
+            disconnect();
+        } else {
+            connect();
+        }
+    }
+    
+    private void connect() {
+        JSONObject deviceInfo = new JSONObject();
+        try {
+            deviceInfo.put("device_id", deviceId);
+            deviceInfo.put("device_name", android.os.Build.MODEL);
+            deviceInfo.put("battery_level", getBatteryLevel());
+            deviceInfo.put("location", "Unknown");
+        } catch (JSONException e) {
+            Log.e(TAG, "Error creating device info", e);
+            return;
+        }
+        
+        RequestBody body = RequestBody.create(
+                deviceInfo.toString(),
+                MediaType.parse("application/json")
+        );
+        
+        Request request = new Request.Builder()
+                .url(SERVER_URL + "/register")
+                .post(body)
+                .build();
+        
+        httpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(MainActivity.this, "فشل الاتصال بالخادم", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Connection failed", e);
+                });
+            }
+            
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                runOnUiThread(() -> {
+                    if (response.isSuccessful()) {
+                        isConnected = true;
+                        updateUI();
+                        startHeartbeat();
+                        Toast.makeText(MainActivity.this, "تم الاتصال بنجاح", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(MainActivity.this, "فشل في التسجيل", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+    }
+    
+    private void disconnect() {
+        isConnected = false;
+        stopHeartbeat();
+        if (isRecording) {
+            stopAudioRecording();
+        }
+        updateUI();
+        Toast.makeText(this, "تم قطع الاتصال", Toast.LENGTH_SHORT).show();
+    }
+    
+    private void startHeartbeat() {
+        heartbeatHandler.post(heartbeatRunnable);
+    }
+    
+    private void stopHeartbeat() {
+        heartbeatHandler.removeCallbacks(heartbeatRunnable);
+    }
+    
+    private void sendHeartbeat() {
+        JSONObject heartbeat = new JSONObject();
+        try {
+            heartbeat.put("device_id", deviceId);
+            heartbeat.put("status", "connected");
+            heartbeat.put("battery_level", getBatteryLevel());
+            
+            JSONObject services = new JSONObject();
+            services.put("audio_recording", isRecording);
+            services.put("screenshot_capture", false);
+            services.put("activity_monitoring", false);
+            heartbeat.put("services", services);
+        } catch (JSONException e) {
+            Log.e(TAG, "Error creating heartbeat", e);
+            return;
+        }
+        
+        RequestBody body = RequestBody.create(
+                heartbeat.toString(),
+                MediaType.parse("application/json")
+        );
+        
+        Request request = new Request.Builder()
+                .url(SERVER_URL + "/heartbeat")
+                .post(body)
+                .build();
+        
+        httpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.e(TAG, "Heartbeat failed", e);
+            }
+            
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "Heartbeat sent successfully");
+                }
+            }
+        });
+    }
+    
+    private void toggleAudioRecording() {
+        if (isRecording) {
+            stopAudioRecording();
+        } else {
+            startAudioRecording();
+        }
+    }
+    
+    private void startAudioRecording() {
+        if (!isConnected) {
+            Toast.makeText(this, "يجب الاتصال بالخادم أولاً", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        try {
+            File audioFile = new File(getExternalFilesDir(null), "recording_" + System.currentTimeMillis() + ".m4a");
+            
+            mediaRecorder = new MediaRecorder();
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            mediaRecorder.setOutputFile(audioFile.getAbsolutePath());
+            
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+            
+            isRecording = true;
+            updateUI();
+            
+            Toast.makeText(this, "بدء التسجيل الصوتي", Toast.LENGTH_SHORT).show();
+            
+            // Schedule automatic stop and upload after 1 minute
+            new Handler().postDelayed(() -> {
+                if (isRecording) {
+                    stopAudioRecording();
+                    uploadAudioFile(audioFile);
+                }
+            }, 60000);
+            
+        } catch (IOException e) {
+            Log.e(TAG, "Error starting audio recording", e);
+            Toast.makeText(this, "فشل في بدء التسجيل", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    private void stopAudioRecording() {
+        if (mediaRecorder != null && isRecording) {
+            try {
+                mediaRecorder.stop();
+                mediaRecorder.release();
+                mediaRecorder = null;
+                isRecording = false;
+                updateUI();
+                Toast.makeText(this, "تم إيقاف التسجيل", Toast.LENGTH_SHORT).show();
+            } catch (RuntimeException e) {
+                Log.e(TAG, "Error stopping recording", e);
+            }
+        }
+    }
+    
+    private void uploadAudioFile(File audioFile) {
+        if (!audioFile.exists()) {
+            Log.e(TAG, "Audio file does not exist");
+            return;
+        }
+        
+        RequestBody fileBody = RequestBody.create(audioFile, MediaType.parse("audio/m4a"));
+        RequestBody deviceIdBody = RequestBody.create(deviceId, MediaType.parse("text/plain"));
+        
+        MultipartBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("device_id", null, deviceIdBody)
+                .addFormDataPart("audio_file", audioFile.getName(), fileBody)
+                .addFormDataPart("duration", "60")
+                .build();
+        
+        Request request = new Request.Builder()
+                .url(SERVER_URL + "/upload/audio")
+                .post(requestBody)
+                .build();
+        
+        httpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.e(TAG, "Audio upload failed", e);
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "فشل في رفع الملف الصوتي", Toast.LENGTH_SHORT).show());
+            }
+            
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                runOnUiThread(() -> {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(MainActivity.this, "تم رفع الملف الصوتي بنجاح", Toast.LENGTH_SHORT).show();
+                        audioFile.delete(); // Clean up local file
+                    } else {
+                        Toast.makeText(MainActivity.this, "فشل في رفع الملف الصوتي", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+    }
+    
+    private void takeScreenshot() {
+        if (!isConnected) {
+            Toast.makeText(this, "يجب الاتصال بالخادم أولاً", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Note: Taking screenshots requires special permissions in Android
+        // This is a simplified implementation
+        Toast.makeText(this, "ميزة لقطة الشاشة تتطلب صلاحيات خاصة", Toast.LENGTH_LONG).show();
+    }
+    
+    private int getBatteryLevel() {
+        // Simplified battery level implementation
+        return 85; // Return a dummy value for now
+    }
+    
+    private void updateUI() {
+        runOnUiThread(() -> {
+            if (isConnected) {
+                statusText.setText("متصل - معرف الجهاز: " + deviceId);
+                connectButton.setText("قطع الاتصال");
+                audioButton.setEnabled(true);
+                screenshotButton.setEnabled(true);
+            } else {
+                statusText.setText("غير متصل");
+                connectButton.setText("اتصال");
+                audioButton.setEnabled(false);
+                screenshotButton.setEnabled(false);
+            }
+            
+            if (isRecording) {
+                audioButton.setText("إيقاف التسجيل");
+            } else {
+                audioButton.setText("بدء التسجيل");
+            }
+        });
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (isRecording) {
+            stopAudioRecording();
+        }
+        stopHeartbeat();
+    }
+}
+

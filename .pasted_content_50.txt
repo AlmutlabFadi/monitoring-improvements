@@ -1,0 +1,160 @@
+تمام، ننتقل الآن إلى شرح مفصل لكود متكامل لالتقاط الشاشة بشكل دوري باستخدام MediaProjection API مع إدارة دفق الصور والتخزين المؤقت.
+
+
+---
+
+21. التقاط الشاشة باستخدام MediaProjection API بشكل دوري
+
+
+---
+
+1. إعداد المتغيرات الأساسية
+
+private lateinit var mediaProjectionManager: MediaProjectionManager
+private var mediaProjection: MediaProjection? = null
+private var virtualDisplay: VirtualDisplay? = null
+private lateinit var imageReader: ImageReader
+
+private val screenDensity by lazy {
+    Resources.getSystem().displayMetrics.densityDpi
+}
+
+private val screenWidth = Resources.getSystem().displayMetrics.widthPixels
+private val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+
+
+---
+
+2. طلب إذن الالتقاط من المستخدم
+
+private val REQUEST_CODE_CAPTURE = 1001
+
+fun startScreenCapture() {
+    mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+    startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), REQUEST_CODE_CAPTURE)
+}
+
+
+---
+
+3. استقبال نتيجة الإذن وإنشاء MediaProjection
+
+override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    if (requestCode == REQUEST_CODE_CAPTURE && resultCode == Activity.RESULT_OK && data != null) {
+        mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data)
+        setupVirtualDisplay()
+    }
+}
+
+
+---
+
+4. إنشاء VirtualDisplay و ImageReader لالتقاط الصور
+
+private fun setupVirtualDisplay() {
+    imageReader = ImageReader.newInstance(screenWidth, screenHeight, PixelFormat.RGBA_8888, 2)
+
+    virtualDisplay = mediaProjection?.createVirtualDisplay(
+        "ScreenCapture",
+        screenWidth,
+        screenHeight,
+        screenDensity,
+        DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+        imageReader.surface,
+        null,
+        null
+    )
+
+    imageReader.setOnImageAvailableListener({ reader ->
+        val image = reader.acquireLatestImage()
+        image?.let {
+            saveImage(it)
+            it.close()
+        }
+    }, Handler(Looper.getMainLooper()))
+}
+
+
+---
+
+5. حفظ الصورة (يمكنك التعديل لتشفيرها قبل الحفظ)
+
+private fun saveImage(image: Image) {
+    val buffer = image.planes[0].buffer
+    val width = image.width
+    val height = image.height
+    val pixelStride = image.planes[0].pixelStride
+    val rowStride = image.planes[0].rowStride
+    val rowPadding = rowStride - pixelStride * width
+
+    val bitmap = Bitmap.createBitmap(
+        width + rowPadding / pixelStride,
+        height,
+        Bitmap.Config.ARGB_8888
+    )
+    bitmap.copyPixelsFromBuffer(buffer)
+
+    // قص الصورة إلى الحجم الصحيح
+    val croppedBitmap = Bitmap.createBitmap(bitmap, 0, 0, width, height)
+
+    // حفظ أو تشفير الصورة هنا
+    val file = File(getExternalFilesDir(null), "screenshot_${System.currentTimeMillis()}.png")
+    FileOutputStream(file).use {
+        croppedBitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+    }
+}
+
+
+---
+
+6. التقاط الشاشة بشكل دوري
+
+يمكن استخدام Handler أو ScheduledExecutorService لتشغيل أمر الالتقاط كل 30 ثانية.
+
+private val captureHandler = Handler(Looper.getMainLooper())
+private val captureInterval: Long = 30000 // 30 ثانية
+
+private val captureRunnable = object : Runnable {
+    override fun run() {
+        imageReader.acquireLatestImage()?.close() // لتحرير الصورة القديمة
+        // لا حاجة لطلب صورة جديدة MediaProjection تستمر في التدفق
+        captureHandler.postDelayed(this, captureInterval)
+    }
+}
+
+fun startPeriodicCapture() {
+    captureHandler.post(captureRunnable)
+}
+
+fun stopPeriodicCapture() {
+    captureHandler.removeCallbacks(captureRunnable)
+    virtualDisplay?.release()
+    mediaProjection?.stop()
+}
+
+
+---
+
+ملاحظات مهمة:
+
+يجب طلب إذن READ_EXTERNAL_STORAGE أو استخدام Storage Access Framework في حالة حفظ الصور في مجلد عام.
+
+يمكن دمج التشفير داخل saveImage() لحماية الصور المخزنة.
+
+تأكد من إدارة الموارد بشكل جيد لمنع تسريبات الذاكرة.
+
+التقاط الشاشة يحتاج موافقة المستخدم، ولا يمكن تنفيذه بشكل كامل مخفي بدون تفاعل أولي.
+
+
+
+---
+
+هل تريد مساعدتي في:
+
+إضافة تشفير الصور قبل الحفظ تلقائيًا؟
+
+دمج هذه الوظيفة مع رفع الصور المشفرة إلى خادم؟
+
+أو العمل على تطوير باقي الميزات (مثلاً تسجيل الصوت أو تتبع الموقع)؟
+
+

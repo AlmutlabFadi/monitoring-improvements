@@ -1,0 +1,125 @@
+حسنًا، نكمل الآن بتضمين تخزين المفتاح الآمن باستخدام Android Keystore وكيفية استخدامه لتخزين واسترجاع مفتاح التشفير بطريقة آمنة.
+
+
+---
+
+14. استخدام Android Keystore لتخزين مفتاح AES بشكل آمن
+
+
+---
+
+أ. إنشاء مفتاح AES داخل Keystore
+
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
+import java.security.KeyStore
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+
+private const val KEY_ALIAS = "MyAppAESKey"
+
+fun generateAndStoreAESKey(): SecretKey {
+    val keyStore = KeyStore.getInstance("AndroidKeyStore").apply {
+        load(null)
+    }
+
+    // تحقق إذا المفتاح موجود مسبقًا
+    if (keyStore.containsAlias(KEY_ALIAS)) {
+        val secretKeyEntry = keyStore.getEntry(KEY_ALIAS, null) as KeyStore.SecretKeyEntry
+        return secretKeyEntry.secretKey
+    }
+
+    val keyGenerator = KeyGenerator.getInstance(
+        KeyProperties.KEY_ALGORITHM_AES,
+        "AndroidKeyStore"
+    )
+    val keyGenParameterSpec = KeyGenParameterSpec.Builder(
+        KEY_ALIAS,
+        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+    )
+        .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+        .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
+        .setKeySize(256)
+        .build()
+
+    keyGenerator.init(keyGenParameterSpec)
+    return keyGenerator.generateKey()
+}
+
+
+---
+
+ب. استرجاع المفتاح من Keystore
+
+fun getSecretKey(): SecretKey? {
+    val keyStore = KeyStore.getInstance("AndroidKeyStore").apply {
+        load(null)
+    }
+    val entry = keyStore.getEntry(KEY_ALIAS, null) as? KeyStore.SecretKeyEntry
+    return entry?.secretKey
+}
+
+
+---
+
+ج. تعديل دوال التشفير لتستخدم المفتاح من Keystore
+
+val secretKey = getSecretKey() ?: generateAndStoreAESKey()
+
+
+---
+
+د. نقاط مهمة:
+
+مفتاح AES داخل Keystore لا يمكن تصديره خارج الجهاز، مما يضمن أمانًا عاليًا.
+
+يمكن استخدام نفس المفتاح لتشفير وفك تشفير البيانات داخل التطبيق فقط.
+
+يجب إدارة الـ IV (مصفوفة التهيئة) بشكل منفصل، يمكن تخزينه مع البيانات المشفرة.
+
+
+
+---
+
+15. دمج مثال عملي: تشفير وفك تشفير ملف باستخدام المفتاح من Keystore
+
+
+---
+
+تشفير محتوى وحفظ ملف:
+
+fun encryptAndSaveFileWithKeystore(content: String, file: File) {
+    val secretKey = getSecretKey() ?: generateAndStoreAESKey()
+    val iv = generateIv()
+    val encryptedText = encryptAES(content, secretKey, iv)
+
+    file.outputStream().use {
+        it.write(iv) // حفظ IV في أول 16 بايت
+        it.write(encryptedText.toByteArray(Charsets.UTF_8))
+    }
+}
+
+قراءة وفك التشفير:
+
+fun readAndDecryptFileWithKeystore(file: File): String {
+    val secretKey = getSecretKey() ?: throw IllegalStateException("Key not found!")
+    file.inputStream().use {
+        val iv = ByteArray(16)
+        it.read(iv)
+        val encryptedData = it.readBytes().toString(Charsets.UTF_8)
+        return decryptAES(encryptedData, secretKey, iv)
+    }
+}
+
+
+---
+
+هل تود الآن:
+
+المساعدة في تضمين التشفير الكامل ضمن تسجيل ضغطات الأزرار؟
+
+أو العمل على تطوير خاصية جديدة (مثل التقاط لقطات الشاشة أو قراءة الرسائل)؟
+
+أو إنشاء واجهة مستخدم آمنة للمراقبة والتقارير؟
+
+

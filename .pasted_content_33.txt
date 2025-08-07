@@ -1,0 +1,272 @@
+تمام، الآن ننتقل إلى ميزة التقاط لقطات الشاشة كل 30 ثانية على أندرويد مع شرح تفصيلي لكيفية الدمج في التطبيق.
+
+
+---
+
+التقاط لقطات الشاشة كل 30 ثانية في أندرويد
+
+
+---
+
+1. التحديات:
+
+أندرويد لا يسمح للتطبيقات العادية بأخذ لقطات شاشة مباشرة بدون إذن المستخدم بسبب خصوصية النظام.
+
+الحل هو استخدام MediaProjection API التي تتيح تسجيل الشاشة بعد موافقة المستخدم.
+
+يجب فتح نافذة موافقة المستخدم لبدء التسجيل أو التقاط الشاشة.
+
+
+
+---
+
+2. خطوات التنفيذ:
+
+نطلب من المستخدم منح إذن MediaProjection عبر واجهة النظام.
+
+نستخدم VirtualDisplay لالتقاط الصور.
+
+نحفظ الصور في ملفات أو نعالجها حسب الحاجة.
+
+نكرر العملية كل 30 ثانية.
+
+
+
+---
+
+3. الكود التفصيلي
+
+
+---
+
+أ- طلب إذن MediaProjection
+
+في MainActivity.kt نضيف كود طلب الإذن:
+
+import android.app.Activity
+import android.content.Intent
+import android.media.projection.MediaProjectionManager
+import android.os.Bundle
+import android.widget.Button
+
+class MainActivity : AppCompatActivity() {
+
+    private val REQUEST_SCREENSHOT = 59706
+    private lateinit var mediaProjectionManager: MediaProjectionManager
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        mediaProjectionManager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+
+        val btnScreenshot = findViewById<Button>(R.id.btnScreenshot)
+        btnScreenshot.setOnClickListener {
+            startActivityForResult(
+                mediaProjectionManager.createScreenCaptureIntent(),
+                REQUEST_SCREENSHOT
+            )
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_SCREENSHOT && resultCode == Activity.RESULT_OK) {
+            data?.let {
+                // نرسل بيانات الإذن إلى الخدمة لبدء التقاط الشاشة
+                val intent = Intent(this, ScreenshotService::class.java)
+                intent.putExtra("resultCode", resultCode)
+                intent.putExtra("data", it)
+                startService(intent)
+            }
+        }
+    }
+}
+
+
+---
+
+ب- خدمة التقاط الشاشة ScreenshotService.kt
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.PixelFormat
+import android.hardware.display.DisplayManager
+import android.hardware.display.VirtualDisplay
+import android.media.ImageReader
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
+import android.os.Build
+import android.os.Environment
+import android.os.Handler
+import android.os.IBinder
+import android.util.DisplayMetrics
+import android.util.Log
+import android.view.WindowManager
+import androidx.core.app.NotificationCompat
+import java.io.File
+import java.io.FileOutputStream
+import java.nio.ByteBuffer
+
+class ScreenshotService : Service() {
+
+    private var mediaProjection: MediaProjection? = null
+    private var virtualDisplay: VirtualDisplay? = null
+    private var imageReader: ImageReader? = null
+    private lateinit var handler: Handler
+    private var width = 0
+    private var height = 0
+    private var density = 0
+    private val SCREENSHOT_INTERVAL = 30 * 1000L // 30 ثانية
+
+    private val CHANNEL_ID = "ScreenshotServiceChannel"
+
+    override fun onCreate() {
+        super.onCreate()
+        handler = Handler(mainLooper)
+        createNotificationChannel()
+        startForeground(2, createNotification())
+
+        val wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        val metrics = DisplayMetrics()
+        wm.defaultDisplay.getMetrics(metrics)
+        width = metrics.widthPixels
+        height = metrics.heightPixels
+        density = metrics.densityDpi
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED) ?: Activity.RESULT_CANCELED
+        val data = intent?.getParcelableExtra<Intent>("data")
+
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            val mProjectionManager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+            mediaProjection = mProjectionManager.getMediaProjection(resultCode, data)
+
+            setupVirtualDisplay()
+            handler.postDelayed(captureRunnable, SCREENSHOT_INTERVAL)
+        } else {
+            stopSelf()
+        }
+        return START_STICKY
+    }
+
+    private fun setupVirtualDisplay() {
+        imageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 2)
+        virtualDisplay = mediaProjection?.createVirtualDisplay(
+            "ScreenCapture",
+            width, height, density,
+            DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+            imageReader?.surface, null, handler
+        )
+    }
+
+    private val captureRunnable = object : Runnable {
+        override fun run() {
+            captureScreenshot()
+            handler.postDelayed(this, SCREENSHOT_INTERVAL)
+        }
+    }
+
+    private fun captureScreenshot() {
+        val image = imageReader?.acquireLatestImage() ?: return
+        val planes = image.planes
+        val buffer: ByteBuffer = planes[0].buffer
+        val pixelStride = planes[0].pixelStride
+        val rowStride = planes[0].rowStride
+        val rowPadding = rowStride - pixelStride * width
+
+        val bitmap = Bitmap.createBitmap(
+            width + rowPadding / pixelStride,
+            height,
+            Bitmap.Config.ARGB_8888
+        )
+        bitmap.copyPixelsFromBuffer(buffer)
+        image.close()
+
+        saveBitmap(bitmap)
+    }
+
+    private fun saveBitmap(bitmap: Bitmap) {
+        try {
+            val screenshotsDir = File(Environment.getExternalStorageDirectory(), "ScreenshotsApp")
+            if (!screenshotsDir.exists()) screenshotsDir.mkdirs()
+
+            val fileName = "screenshot_${System.currentTimeMillis()}.png"
+            val file = File(screenshotsDir, fileName)
+
+            FileOutputStream(file).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+            bitmap.recycle()
+        } catch (e: Exception) {
+            Log.e("ScreenshotService", "Failed to save screenshot: ${e.message}")
+        }
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Screenshot Service Channel",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun createNotification(): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("التقاط الشاشة")
+            .setContentText("التقاط لقطات الشاشة كل 30 ثانية")
+            .setSmallIcon(android.R.drawable.ic_menu_camera)
+            .build()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        handler.removeCallbacks(captureRunnable)
+        virtualDisplay?.release()
+        imageReader?.close()
+        mediaProjection?.stop()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+}
+
+
+---
+
+ج- إضافة زر في الواجهة لبدء التقاط الشاشة (في activity_main.xml)
+
+<Button
+    android:id="@+id/btnScreenshot"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="بدء التقاط الشاشة" />
+
+
+---
+
+4. ملخص العمل:
+
+عند الضغط على زر "بدء التقاط الشاشة"، يطلب التطبيق إذن MediaProjection من النظام.
+
+بعد الموافقة، تبدأ خدمة التقاط الشاشة في العمل.
+
+الخدمة تلتقط صورة شاشة كل 30 ثانية وتحفظها في مجلد "ScreenshotsApp" على الذاكرة الخارجية.
+
+الخدمة تعمل في الخلفية مع إشعار مستمر.
+
+
+
+---
+
+هل تريد أساعدك في دمج هذه الميزة مع ميزة التسجيل الصوتي في تطبيق واحد متكامل؟
+أو نكمل لباقي الميزات التي طلبتها؟
+

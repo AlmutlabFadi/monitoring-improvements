@@ -1,0 +1,123 @@
+أكيد، يمكنني مساعدتك في تحسين الكود الحالي ليكون أكثر تنظيمًا وكفاءة، مع التركيز على جوانب مثل إدارة الأذونات بشكل أفضل، فصل المهام لتسهيل الصيانة، وتحسين الأداء عند التعامل مع الكاميرا والتسجيل.
+
+
+---
+
+تحسينات مقترحة للكود:
+
+1. إدارة الأذونات بشكل مركزي
+
+استخدم مكتبة مثل EasyPermissions لتبسيط طلب الأذونات وإدارتها.
+
+2. فصل منطق الكاميرا عن النشاط (Activity)
+
+أنشئ كلاس مستقل مسؤول عن التعامل مع الكاميرا (CameraController) لكي يكون الكود أكثر قابلية لإعادة الاستخدام.
+
+3. استخدام Coroutine أو Handler لتحسين الأداء في الخلفية
+
+لتجنب تجميد واجهة المستخدم أثناء تجهيز الكاميرا أو تسجيل الفيديو.
+
+4. تحسين التعامل مع أخطاء الكاميرا
+
+مع رسائل واضحة للمستخدم عند فشل فتح الكاميرا أو بدء التسجيل.
+
+
+---
+
+مثال: فصل منطق الكاميرا إلى CameraController
+
+class CameraController(private val context: Context, private val surface: Surface, private val cameraManager: CameraManager) {
+
+    private var cameraDevice: CameraDevice? = null
+    private var captureSession: CameraCaptureSession? = null
+    private var mediaRecorder: MediaRecorder? = null
+    private lateinit var cameraId: String
+    var isFrontCamera = true
+
+    fun openCamera(onOpened: () -> Unit, onError: (String) -> Unit) {
+        try {
+            val cameraIds = cameraManager.cameraIdList
+            cameraId = cameraIds.first {
+                val characteristics = cameraManager.getCameraCharacteristics(it)
+                if (isFrontCamera)
+                    characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
+                else
+                    characteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
+            }
+
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                onError("Camera permission not granted")
+                return
+            }
+
+            cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
+                override fun onOpened(camera: CameraDevice) {
+                    cameraDevice = camera
+                    onOpened()
+                }
+                override fun onDisconnected(camera: CameraDevice) {
+                    camera.close()
+                }
+                override fun onError(camera: CameraDevice, error: Int) {
+                    onError("Camera error: $error")
+                    camera.close()
+                }
+            }, null)
+        } catch (e: CameraAccessException) {
+            onError("CameraAccessException: ${e.message}")
+        }
+    }
+
+    fun startPreview(previewCallback: (CaptureRequest.Builder) -> Unit, onConfigured: () -> Unit, onConfigureFailed: () -> Unit) {
+        cameraDevice?.let { camera ->
+            try {
+                val previewRequestBuilder = camera.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+                previewRequestBuilder.addTarget(surface)
+
+                camera.createCaptureSession(listOf(surface), object : CameraCaptureSession.StateCallback() {
+                    override fun onConfigured(session: CameraCaptureSession) {
+                        captureSession = session
+                        previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
+                        session.setRepeatingRequest(previewRequestBuilder.build(), null, null)
+                        previewCallback(previewRequestBuilder)
+                        onConfigured()
+                    }
+
+                    override fun onConfigureFailed(session: CameraCaptureSession) {
+                        onConfigureFailed()
+                    }
+                }, null)
+            } catch (e: CameraAccessException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun closeCamera() {
+        captureSession?.close()
+        cameraDevice?.close()
+        mediaRecorder?.release()
+        mediaRecorder = null
+    }
+
+    // ... المزيد من الوظائف لتسجيل الفيديو، التبديل، إلخ.
+}
+
+
+---
+
+الخطوة التالية:
+
+إنشاء CameraController في النشاط (Activity).
+
+تمرير Surface من SurfaceView أو TextureView إلى CameraController.
+
+إدارة بدء المعاينة والتسجيل والتبديل عبر هذا الكلاس.
+
+
+
+---
+
+هل تريدني أساعدك في تنفيذ هذا التصميم الكامل مع ربط كل المميزات ضمن هيكل برمجي منظم؟
+أو تود تحسين جزء معين من الكود الحالي؟
+

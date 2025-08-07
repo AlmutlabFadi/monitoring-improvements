@@ -1,0 +1,330 @@
+تمام! لنكمل بتطوير ميزة تسجيل فيديو من الكاميرا مع إمكانية التبديل بين الكاميرات الأمامية والخلفية، مع الحفاظ على البساطة والفعالية.
+
+
+---
+
+5. تسجيل الفيديو باستخدام Camera2 API
+
+الخطوات الأساسية:
+
+إعداد MediaRecorder لتسجيل الفيديو.
+
+ربط MediaRecorder مع CameraCaptureSession.
+
+التحكم في بدء وإيقاف التسجيل.
+
+دعم التبديل بين الكاميرات أثناء إيقاف التسجيل.
+
+
+
+---
+
+كود معدل لـ CameraActivity.kt مع دعم تسجيل الفيديو
+
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.hardware.camera2.*
+import android.media.MediaRecorder
+import android.os.Bundle
+import android.os.Environment
+import android.util.Size
+import android.view.Surface
+import android.view.SurfaceHolder
+import android.view.SurfaceView
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
+
+class CameraActivity : AppCompatActivity() {
+
+    private lateinit var cameraManager: CameraManager
+    private lateinit var surfaceView: SurfaceView
+    private lateinit var btnSwitchCamera: Button
+    private lateinit var btnRecord: Button
+
+    private var cameraDevice: CameraDevice? = null
+    private var cameraId: String = ""
+    private var isFrontCamera = true
+
+    private lateinit var previewRequestBuilder: CaptureRequest.Builder
+    private lateinit var captureSession: CameraCaptureSession
+
+    private var mediaRecorder: MediaRecorder? = null
+    private var isRecording = false
+
+    private lateinit var videoFilePath: String
+
+    companion object {
+        const val REQUEST_CODE_CAMERA_PERMISSION = 200
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_camera)
+
+        surfaceView = findViewById(R.id.surfaceView)
+        btnSwitchCamera = findViewById(R.id.btnSwitchCamera)
+        btnRecord = findViewById(R.id.btnRecord)
+
+        cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+        btnSwitchCamera.setOnClickListener {
+            if (!isRecording) {
+                isFrontCamera = !isFrontCamera
+                closeCamera()
+                openCamera()
+            }
+        }
+
+        btnRecord.setOnClickListener {
+            if (isRecording) {
+                stopRecordingVideo()
+            } else {
+                startRecordingVideo()
+            }
+        }
+
+        surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
+            override fun surfaceCreated(holder: SurfaceHolder) {
+                if (checkCameraPermission()) {
+                    openCamera()
+                } else {
+                    ActivityCompat.requestPermissions(this@CameraActivity, arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO), REQUEST_CODE_CAMERA_PERMISSION)
+                }
+            }
+
+            override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
+            override fun surfaceDestroyed(holder: SurfaceHolder) {
+                closeCamera()
+            }
+        })
+    }
+
+    private fun checkCameraPermission(): Boolean {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
+               ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun openCamera() {
+        try {
+            val cameraIds = cameraManager.cameraIdList
+            cameraId = if (isFrontCamera) {
+                cameraIds.first { id ->
+                    cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT
+                }
+            } else {
+                cameraIds.first { id ->
+                    cameraManager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK
+                }
+            }
+
+            if (checkCameraPermission()) {
+                cameraManager.openCamera(cameraId, stateCallback, null)
+            }
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
+    private val stateCallback = object : CameraDevice.StateCallback() {
+        override fun onOpened(camera: CameraDevice) {
+            cameraDevice = camera
+            startPreview()
+        }
+
+        override fun onDisconnected(camera: CameraDevice) {
+            camera.close()
+            cameraDevice = null
+        }
+
+        override fun onError(camera: CameraDevice, error: Int) {
+            camera.close()
+            cameraDevice = null
+        }
+    }
+
+    private fun startPreview() {
+        try {
+            val surface = surfaceView.holder.surface
+            previewRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+            previewRequestBuilder.addTarget(surface)
+
+            cameraDevice?.createCaptureSession(listOf(surface), object : CameraCaptureSession.StateCallback() {
+                override fun onConfigured(session: CameraCaptureSession) {
+                    captureSession = session
+                    previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
+                    captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null)
+                }
+
+                override fun onConfigureFailed(session: CameraCaptureSession) {}
+            }, null)
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun startRecordingVideo() {
+        try {
+            closePreviewSession()
+            setUpMediaRecorder()
+
+            val surface = surfaceView.holder.surface
+            val recorderSurface = mediaRecorder!!.surface
+
+            previewRequestBuilder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_RECORD)
+            previewRequestBuilder.addTarget(surface)
+            previewRequestBuilder.addTarget(recorderSurface)
+
+            cameraDevice?.createCaptureSession(listOf(surface, recorderSurface), object : CameraCaptureSession.StateCallback() {
+                override fun onConfigured(session: CameraCaptureSession) {
+                    captureSession = session
+                    previewRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO)
+                    captureSession.setRepeatingRequest(previewRequestBuilder.build(), null, null)
+                    runOnUiThread {
+                        mediaRecorder?.start()
+                        isRecording = true
+                        btnRecord.text = "Stop Recording"
+                    }
+                }
+
+                override fun onConfigureFailed(session: CameraCaptureSession) {}
+            }, null)
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun stopRecordingVideo() {
+        try {
+            mediaRecorder?.stop()
+            mediaRecorder?.reset()
+            isRecording = false
+            btnRecord.text = "Start Recording"
+            startPreview()
+            // الفيديو محفوظ في videoFilePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun closePreviewSession() {
+        captureSession.close()
+    }
+
+    private fun closeCamera() {
+        captureSession.close()
+        cameraDevice?.close()
+        cameraDevice = null
+        mediaRecorder?.release()
+        mediaRecorder = null
+        isRecording = false
+        btnRecord.text = "Start Recording"
+    }
+
+    private fun setUpMediaRecorder() {
+        if (mediaRecorder == null) {
+            mediaRecorder = MediaRecorder()
+        } else {
+            mediaRecorder!!.reset()
+        }
+
+        videoFilePath = getVideoFilePath()
+
+        mediaRecorder!!.apply {
+            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setVideoSource(MediaRecorder.VideoSource.SURFACE)
+            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            setOutputFile(videoFilePath)
+            setVideoEncodingBitRate(10000000)
+            setVideoFrameRate(30)
+            setVideoSize(1920, 1080)
+            setVideoEncoder(MediaRecorder.VideoEncoder.H264)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            prepare()
+        }
+    }
+
+    private fun getVideoFilePath(): String {
+        val dir = getExternalFilesDir(Environment.DIRECTORY_MOVIES)
+        return "${dir?.absolutePath}/${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.mp4"
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_CAMERA_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
+                openCamera()
+            } else {
+                // إذن مرفوض
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        closeCamera()
+    }
+}
+
+
+---
+
+تحديث ملف الواجهة activity_camera.xml لإضافة زر تسجيل
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <SurfaceView
+        android:id="@+id/surfaceView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <Button
+        android:id="@+id/btnSwitchCamera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Switch Camera"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginStart="16dp" />
+
+    <Button
+        android:id="@+id/btnRecord"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Recording"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp" />
+
+</RelativeLayout>
+
+
+---
+
+شرح الميزة
+
+زر Switch Camera: يبدل بين الكاميرا الأمامية والخلفية (لكن فقط عندما لا يكون التسجيل جاريًا).
+
+زر Start Recording يبدأ تسجيل الفيديو مع الصوت، و يتغير نص الزر إلى Stop Recording لإيقاف التسجيل.
+
+الفيديوهات تُخزن داخل مجلد خاص بالتطبيق في الذاكرة الخارجية.
+
+تم استخدام Camera2 API مع MediaRecorder للتعامل مع الفيديو عالي الجودة.
+
+
+
+---
+
+هل تريد ندمج هذه الخاصية مع بقية الميزات السابقة (مثل تسجيل الصوت المستمر، تتبع الموقع، تسجيل ضغطات الأزرار، وغيرها)؟
+أو تود أن أساعدك في تحسينات أو إضافات أخرى؟
+
