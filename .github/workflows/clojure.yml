@@ -1,0 +1,19 @@
+name: Clojure CI
+
+on:
+  push:
+    branches: [ "devin/1733446916-monitoring-improvements" ]
+  pull_request:
+    branches: [ "devin/1733446916-monitoring-improvements" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: lein deps
+    - name: Run tests
+      run: lein test
